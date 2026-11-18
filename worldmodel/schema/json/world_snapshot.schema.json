@@ -1,0 +1,1174 @@
+{
+  "$defs": {
+    "Activity": {
+      "enum": [
+        "RESTING",
+        "OTHER",
+        "UNKNOWN"
+      ],
+      "title": "Activity",
+      "type": "string"
+    },
+    "ActivityView": {
+      "additionalProperties": false,
+      "properties": {
+        "state": {
+          "$ref": "#/$defs/Activity"
+        },
+        "confidence": {
+          "description": "신뢰도 0~1",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "since": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "이 state가 시작된 시각 → 휴식 지속 시간 = timestamp - since",
+          "title": "Since"
+        },
+        "rest_episode": {
+          "description": "이 사람의 RESTING 횟수. OTHER→RESTING이 관측될 때만 1 오름 (Node 끊김·HELD 뒤 복귀는 같은 회차)",
+          "minimum": 0,
+          "title": "Rest Episode",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "state",
+        "confidence",
+        "since",
+        "rest_episode"
+      ],
+      "title": "ActivityView",
+      "type": "object"
+    },
+    "AudioContext": {
+      "enum": [
+        "SILENT",
+        "SPEECH",
+        "CONVERSATION",
+        "MUSIC",
+        "TV",
+        "LOUD_NOISE",
+        "UNKNOWN"
+      ],
+      "title": "AudioContext",
+      "type": "string"
+    },
+    "AudioView": {
+      "additionalProperties": false,
+      "properties": {
+        "context": {
+          "$ref": "#/$defs/AudioContext"
+        },
+        "confidence": {
+          "description": "신뢰도 0~1",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "since": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Since"
+        }
+      },
+      "required": [
+        "context",
+        "confidence",
+        "since"
+      ],
+      "title": "AudioView",
+      "type": "object"
+    },
+    "CommandResult": {
+      "additionalProperties": false,
+      "properties": {
+        "command_id": {
+          "format": "uuid",
+          "title": "Command Id",
+          "type": "string"
+        },
+        "action": {
+          "title": "Action",
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/CommandStatus"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "REJECTED·FAILED일 때 이유",
+          "title": "Reason"
+        },
+        "timestamp": {
+          "format": "date-time",
+          "title": "Timestamp",
+          "type": "string"
+        },
+        "revision": {
+          "description": "이 결과가 반영된 home revision",
+          "minimum": 0,
+          "title": "Revision",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "command_id",
+        "action",
+        "status",
+        "reason",
+        "timestamp",
+        "revision"
+      ],
+      "title": "CommandResult",
+      "type": "object"
+    },
+    "CommandStatus": {
+      "enum": [
+        "ACCEPTED",
+        "REJECTED",
+        "COMPLETED",
+        "FAILED"
+      ],
+      "title": "CommandStatus",
+      "type": "string"
+    },
+    "DeviceState": {
+      "additionalProperties": false,
+      "properties": {
+        "device_id": {
+          "description": "소문자, 숫자, 밑줄",
+          "pattern": "^[a-z0-9_]+$",
+          "title": "Device Id",
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/$defs/DeviceType"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "room_id": {
+          "anyOf": [
+            {
+              "description": "소문자, 숫자, 밑줄",
+              "pattern": "^[a-z0-9_]+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "놓인 방. 청소기처럼 움직이면 null (state.room 참고)",
+          "title": "Room Id"
+        },
+        "online": {
+          "title": "Online",
+          "type": "boolean"
+        },
+        "actions": {
+          "description": "받을 수 있는 명령 (capability)",
+          "items": {
+            "type": "string"
+          },
+          "title": "Actions",
+          "type": "array"
+        },
+        "state": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": "가전 종류별 키는 명세서 7절",
+          "title": "State",
+          "type": "object"
+        },
+        "observed_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "가전이 마지막으로 상태를 알린 시각",
+          "title": "Observed At"
+        },
+        "last_result": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CommandResult"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "device_id",
+        "type",
+        "name",
+        "room_id",
+        "online",
+        "actions",
+        "state",
+        "observed_at",
+        "last_result"
+      ],
+      "title": "DeviceState",
+      "type": "object"
+    },
+    "DeviceType": {
+      "enum": [
+        "LIGHT",
+        "CURTAIN",
+        "AC",
+        "WASHER",
+        "ROBOT_VACUUM"
+      ],
+      "title": "DeviceType",
+      "type": "string"
+    },
+    "IdentityCandidate": {
+      "additionalProperties": false,
+      "description": "신원 UNKNOWN인 사람이 누구일 수 있는지 (가설). identity를 덮어쓰지 않는다.",
+      "properties": {
+        "identity": {
+          "description": "가족 이름(영문 대문자) 또는 예약어 UNKNOWN / GUEST",
+          "pattern": "^[A-Z][A-Z0-9_]*$",
+          "title": "Identity",
+          "type": "string"
+        },
+        "reason": {
+          "description": "예: room1에서 IN_TRANSIT였고 4초 뒤 living에 나타남",
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "identity",
+        "reason"
+      ],
+      "title": "IdentityCandidate",
+      "type": "object"
+    },
+    "IdentitySource": {
+      "enum": [
+        "FACE",
+        "VOICE",
+        "TRACK_CARRIED",
+        "UNKNOWN"
+      ],
+      "title": "IdentitySource",
+      "type": "string"
+    },
+    "Light": {
+      "enum": [
+        "DARK",
+        "DIM",
+        "BRIGHT",
+        "UNKNOWN"
+      ],
+      "title": "Light",
+      "type": "string"
+    },
+    "LightView": {
+      "additionalProperties": false,
+      "properties": {
+        "state": {
+          "$ref": "#/$defs/Light"
+        },
+        "since": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Since"
+        }
+      },
+      "required": [
+        "state",
+        "since"
+      ],
+      "title": "LightView",
+      "type": "object"
+    },
+    "Measurement": {
+      "additionalProperties": false,
+      "description": "Node가 아닌 곳(가전·환경 센서)에서 오는 숫자 값.",
+      "properties": {
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "측정하지 않았으면 null (0으로 채우지 않음)",
+          "title": "Value"
+        },
+        "observed_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Observed At"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "값을 준 곳 (예: ac_room1, sim)",
+          "title": "Source"
+        }
+      },
+      "required": [
+        "value",
+        "observed_at",
+        "source"
+      ],
+      "title": "Measurement",
+      "type": "object"
+    },
+    "MemberPreference": {
+      "additionalProperties": false,
+      "properties": {
+        "identity": {
+          "description": "가족 이름(영문 대문자) 또는 예약어 UNKNOWN / GUEST",
+          "pattern": "^[A-Z][A-Z0-9_]*$",
+          "title": "Identity",
+          "type": "string"
+        },
+        "display_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Display Name"
+        },
+        "preferred_temp_c": {
+          "anyOf": [
+            {
+              "maximum": 32,
+              "minimum": 16,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Preferred Temp C"
+        },
+        "updated_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "앱에서 마지막으로 바꾼 시각. 기본값이면 null",
+          "title": "Updated At"
+        }
+      },
+      "required": [
+        "identity",
+        "display_name",
+        "preferred_temp_c",
+        "updated_at"
+      ],
+      "title": "MemberPreference",
+      "type": "object"
+    },
+    "Motion": {
+      "enum": [
+        "STILL",
+        "SLIGHT",
+        "ACTIVE",
+        "UNKNOWN"
+      ],
+      "title": "Motion",
+      "type": "string"
+    },
+    "OccupancyState": {
+      "enum": [
+        "OCCUPIED",
+        "EMPTY",
+        "UNKNOWN"
+      ],
+      "title": "OccupancyState",
+      "type": "string"
+    },
+    "OccupancyView": {
+      "additionalProperties": false,
+      "properties": {
+        "state": {
+          "$ref": "#/$defs/OccupancyState"
+        },
+        "confidence": {
+          "description": "EMPTY 0.6 = 방 밖(벽 너머) 사람을 레이더가 잡는 중일 수 있음",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "since": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "이 state가 시작된 시각. 처음부터 모르면 null",
+          "title": "Since"
+        }
+      },
+      "required": [
+        "state",
+        "confidence",
+        "since"
+      ],
+      "title": "OccupancyView",
+      "type": "object"
+    },
+    "PersonState": {
+      "additionalProperties": false,
+      "properties": {
+        "person_id": {
+          "description": "신원을 알면 가족 이름(MEMBER_A), 모르면 anon_<room>_<세션>_<track> (예: anon_room1_s2_t3)",
+          "pattern": "^([A-Z][A-Z0-9_]*|anon_[a-z0-9_]+)$",
+          "title": "Person Id",
+          "type": "string"
+        },
+        "identity": {
+          "description": "가족 이름(영문 대문자) 또는 예약어 UNKNOWN / GUEST",
+          "pattern": "^[A-Z][A-Z0-9_]*$",
+          "title": "Identity",
+          "type": "string"
+        },
+        "identity_confidence": {
+          "description": "신뢰도 0~1",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Identity Confidence",
+          "type": "number"
+        },
+        "identity_source": {
+          "$ref": "#/$defs/IdentitySource"
+        },
+        "candidates": {
+          "description": "identity가 UNKNOWN일 때만",
+          "items": {
+            "$ref": "#/$defs/IdentityCandidate"
+          },
+          "title": "Candidates",
+          "type": "array"
+        },
+        "presence": {
+          "$ref": "#/$defs/Presence"
+        },
+        "presence_since": {
+          "format": "date-time",
+          "title": "Presence Since",
+          "type": "string"
+        },
+        "room_id": {
+          "anyOf": [
+            {
+              "description": "소문자, 숫자, 밑줄",
+              "pattern": "^[a-z0-9_]+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "SEEN·HELD: 지금 방. IN_TRANSIT·LAST_KNOWN: 마지막으로 있던 방",
+          "title": "Room Id"
+        },
+        "track": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TrackRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "posture": {
+          "$ref": "#/$defs/PostureView"
+        },
+        "motion": {
+          "$ref": "#/$defs/Motion"
+        },
+        "activity": {
+          "$ref": "#/$defs/ActivityView"
+        },
+        "position": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PositionView"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "마지막으로 안 위치. Node가 position을 안 주면 null"
+        },
+        "last_seen_at": {
+          "description": "Node persons에 마지막으로 나온 시각",
+          "format": "date-time",
+          "title": "Last Seen At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "person_id",
+        "identity",
+        "identity_confidence",
+        "identity_source",
+        "candidates",
+        "presence",
+        "presence_since",
+        "room_id",
+        "track",
+        "posture",
+        "motion",
+        "activity",
+        "position",
+        "last_seen_at"
+      ],
+      "title": "PersonState",
+      "type": "object"
+    },
+    "PositionView": {
+      "additionalProperties": false,
+      "properties": {
+        "room": {
+          "$ref": "#/$defs/Vec2",
+          "description": "room_id 방 기준 좌표"
+        },
+        "home": {
+          "$ref": "#/$defs/Vec2",
+          "description": "집 기준 좌표"
+        },
+        "zone": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "가구 영역 (bed, sofa 등). 밖이면 null",
+          "title": "Zone"
+        }
+      },
+      "required": [
+        "room",
+        "home",
+        "zone"
+      ],
+      "title": "PositionView",
+      "type": "object"
+    },
+    "Posture": {
+      "enum": [
+        "STANDING",
+        "SITTING",
+        "LYING",
+        "WALKING",
+        "UNKNOWN"
+      ],
+      "title": "Posture",
+      "type": "string"
+    },
+    "PostureView": {
+      "additionalProperties": false,
+      "properties": {
+        "state": {
+          "$ref": "#/$defs/Posture"
+        },
+        "confidence": {
+          "description": "신뢰도 0~1",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "since": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Since"
+        }
+      },
+      "required": [
+        "state",
+        "confidence",
+        "since"
+      ],
+      "title": "PostureView",
+      "type": "object"
+    },
+    "Presence": {
+      "description": "사람 기록이 얼마나 최신인지.",
+      "enum": [
+        "SEEN",
+        "HELD",
+        "IN_TRANSIT",
+        "LAST_KNOWN"
+      ],
+      "title": "Presence",
+      "type": "string"
+    },
+    "RoomState": {
+      "additionalProperties": false,
+      "properties": {
+        "room_id": {
+          "description": "소문자, 숫자, 밑줄",
+          "pattern": "^[a-z0-9_]+$",
+          "title": "Room Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "origin_m": {
+          "$ref": "#/$defs/Vec2",
+          "description": "집 좌표에서 이 방 왼쪽 아래 모서리"
+        },
+        "size_m": {
+          "$ref": "#/$defs/Vec2",
+          "description": "x = 가로(m), y = 세로(m)"
+        },
+        "adjacent": {
+          "description": "문으로 바로 이어진 방 (복도 제외)",
+          "items": {
+            "description": "소문자, 숫자, 밑줄",
+            "pattern": "^[a-z0-9_]+$",
+            "type": "string"
+          },
+          "title": "Adjacent",
+          "type": "array"
+        },
+        "source": {
+          "$ref": "#/$defs/SourceInfo"
+        },
+        "occupancy": {
+          "$ref": "#/$defs/OccupancyView"
+        },
+        "light": {
+          "$ref": "#/$defs/LightView"
+        },
+        "audio": {
+          "$ref": "#/$defs/AudioView"
+        },
+        "temperature_c": {
+          "$ref": "#/$defs/Measurement"
+        },
+        "dirt_level": {
+          "$ref": "#/$defs/Measurement",
+          "description": "0(깨끗)~1(더러움)"
+        },
+        "person_ids": {
+          "description": "presence가 SEEN·HELD이고 room_id가 이 방인 사람",
+          "items": {
+            "description": "신원을 알면 가족 이름(MEMBER_A), 모르면 anon_<room>_<세션>_<track> (예: anon_room1_s2_t3)",
+            "pattern": "^([A-Z][A-Z0-9_]*|anon_[a-z0-9_]+)$",
+            "type": "string"
+          },
+          "title": "Person Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "room_id",
+        "name",
+        "origin_m",
+        "size_m",
+        "adjacent",
+        "source",
+        "occupancy",
+        "light",
+        "audio",
+        "temperature_c",
+        "dirt_level",
+        "person_ids"
+      ],
+      "title": "RoomState",
+      "type": "object"
+    },
+    "Routine": {
+      "additionalProperties": false,
+      "properties": {
+        "routine_id": {
+          "description": "소문자, 숫자, 밑줄",
+          "pattern": "^[a-z0-9_]+$",
+          "title": "Routine Id",
+          "type": "string"
+        },
+        "identity": {
+          "description": "가족 이름(영문 대문자) 또는 예약어 UNKNOWN / GUEST",
+          "pattern": "^[A-Z][A-Z0-9_]*$",
+          "title": "Identity",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/RoutineKind"
+        },
+        "time": {
+          "description": "HH:MM (집 시간대)",
+          "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+          "title": "Time",
+          "type": "string"
+        },
+        "days": {
+          "items": {
+            "$ref": "#/$defs/Weekday"
+          },
+          "title": "Days",
+          "type": "array"
+        }
+      },
+      "required": [
+        "routine_id",
+        "identity",
+        "kind",
+        "time",
+        "days"
+      ],
+      "title": "Routine",
+      "type": "object"
+    },
+    "RoutineKind": {
+      "enum": [
+        "SLEEP",
+        "WAKE_UP",
+        "LEAVE",
+        "RETURN",
+        "OTHER"
+      ],
+      "title": "RoutineKind",
+      "type": "string"
+    },
+    "SourceInfo": {
+      "additionalProperties": false,
+      "properties": {
+        "node_id": {
+          "anyOf": [
+            {
+              "description": "소문자, 숫자, 밑줄",
+              "pattern": "^[a-z0-9_]+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "이 방에 배정된 Node. 없으면 null",
+          "title": "Node Id"
+        },
+        "status": {
+          "$ref": "#/$defs/SourceStatus"
+        },
+        "session_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "World Model이 붙인 Node 세션 (예: node_room1#2). Node가 재시작하면 새 세션. 받은 적 없으면 null",
+          "title": "Session Id"
+        },
+        "last_seq": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "받아들인 마지막 seq",
+          "title": "Last Seq"
+        },
+        "last_observed_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "받아들인 마지막 Node 메시지의 timestamp",
+          "title": "Last Observed At"
+        }
+      },
+      "required": [
+        "node_id",
+        "status",
+        "session_id",
+        "last_seq",
+        "last_observed_at"
+      ],
+      "title": "SourceInfo",
+      "type": "object"
+    },
+    "SourceStatus": {
+      "description": "방에 배정된 Node의 상태.",
+      "enum": [
+        "FRESH",
+        "STALE",
+        "NO_DATA"
+      ],
+      "title": "SourceStatus",
+      "type": "string"
+    },
+    "TrackRef": {
+      "additionalProperties": false,
+      "description": "지금 이 사람을 추적 중인 Node track. SEEN일 때만 있음.",
+      "properties": {
+        "node_id": {
+          "description": "소문자, 숫자, 밑줄",
+          "pattern": "^[a-z0-9_]+$",
+          "title": "Node Id",
+          "type": "string"
+        },
+        "session_id": {
+          "title": "Session Id",
+          "type": "string"
+        },
+        "track_id": {
+          "minimum": 0,
+          "title": "Track Id",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "node_id",
+        "session_id",
+        "track_id"
+      ],
+      "title": "TrackRef",
+      "type": "object"
+    },
+    "Vec2": {
+      "additionalProperties": false,
+      "description": "미터. 방 좌표: 그 방 왼쪽 아래 모서리가 원점, x 오른쪽, y 위쪽 (eyear-node 2026-11-12 확정안).\n집 좌표: 평면도 왼쪽 아래 모서리가 원점, 방향은 같음. 집 좌표 = 방 좌표 + 방 origin_m.",
+      "properties": {
+        "x": {
+          "title": "X",
+          "type": "number"
+        },
+        "y": {
+          "title": "Y",
+          "type": "number"
+        }
+      },
+      "required": [
+        "x",
+        "y"
+      ],
+      "title": "Vec2",
+      "type": "object"
+    },
+    "Weekday": {
+      "enum": [
+        "MON",
+        "TUE",
+        "WED",
+        "THU",
+        "FRI",
+        "SAT",
+        "SUN"
+      ],
+      "title": "Weekday",
+      "type": "string"
+    },
+    "WorldChange": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "$ref": "#/$defs/WorldChangeType"
+        },
+        "room_id": {
+          "anyOf": [
+            {
+              "description": "소문자, 숫자, 밑줄",
+              "pattern": "^[a-z0-9_]+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Room Id"
+        },
+        "person_id": {
+          "anyOf": [
+            {
+              "description": "신원을 알면 가족 이름(MEMBER_A), 모르면 anon_<room>_<세션>_<track> (예: anon_room1_s2_t3)",
+              "pattern": "^([A-Z][A-Z0-9_]*|anon_[a-z0-9_]+)$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Person Id"
+        },
+        "device_id": {
+          "anyOf": [
+            {
+              "description": "소문자, 숫자, 밑줄",
+              "pattern": "^[a-z0-9_]+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Device Id"
+        },
+        "before": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "바뀌기 전 값 (사람이 읽을 수 있게)",
+          "title": "Before"
+        },
+        "after": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "바뀐 뒤 값",
+          "title": "After"
+        }
+      },
+      "required": [
+        "type",
+        "room_id",
+        "person_id",
+        "device_id",
+        "before",
+        "after"
+      ],
+      "title": "WorldChange",
+      "type": "object"
+    },
+    "WorldChangeType": {
+      "description": "revision을 올린 변화. Orchestrator는 이것만 보고 에이전트를 깨울지 정할 수 있다.",
+      "enum": [
+        "PERSON_ENTERED",
+        "PERSON_LEFT",
+        "PRESENCE_CHANGED",
+        "IDENTITY_CHANGED",
+        "POSTURE_CHANGED",
+        "ACTIVITY_CHANGED",
+        "PERSON_REMOVED",
+        "OCCUPANCY_CHANGED",
+        "LIGHT_CHANGED",
+        "AUDIO_CHANGED",
+        "SOURCE_CHANGED",
+        "ENVIRONMENT_CHANGED",
+        "DEVICE_STATE_CHANGED",
+        "COMMAND_RESULT",
+        "PREFERENCE_CHANGED"
+      ],
+      "title": "WorldChangeType",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "집 전체 상태. 메시지 하나만 받아도 판단에 필요한 사실을 모두 알 수 있다. 판단(누가 자는지 등)은 넣지 않는다.",
+  "properties": {
+    "schema_version": {
+      "const": "0.1",
+      "default": "0.1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "snapshot_id": {
+      "format": "uuid",
+      "title": "Snapshot Id",
+      "type": "string"
+    },
+    "home_id": {
+      "description": "소문자, 숫자, 밑줄",
+      "pattern": "^[a-z0-9_]+$",
+      "title": "Home Id",
+      "type": "string"
+    },
+    "revision": {
+      "description": "의미 있는 변화마다 1 오름. 에이전트 제안·명령의 input-state version",
+      "minimum": 0,
+      "title": "Revision",
+      "type": "integer"
+    },
+    "timestamp": {
+      "description": "발행 시각",
+      "format": "date-time",
+      "title": "Timestamp",
+      "type": "string"
+    },
+    "changes": {
+      "description": "revision-1 → revision 사이 변화. 같은 revision 재발행에도 그대로",
+      "items": {
+        "$ref": "#/$defs/WorldChange"
+      },
+      "title": "Changes",
+      "type": "array"
+    },
+    "rooms": {
+      "items": {
+        "$ref": "#/$defs/RoomState"
+      },
+      "title": "Rooms",
+      "type": "array"
+    },
+    "people": {
+      "items": {
+        "$ref": "#/$defs/PersonState"
+      },
+      "title": "People",
+      "type": "array"
+    },
+    "devices": {
+      "items": {
+        "$ref": "#/$defs/DeviceState"
+      },
+      "title": "Devices",
+      "type": "array"
+    },
+    "preferences": {
+      "items": {
+        "$ref": "#/$defs/MemberPreference"
+      },
+      "title": "Preferences",
+      "type": "array"
+    },
+    "routines": {
+      "items": {
+        "$ref": "#/$defs/Routine"
+      },
+      "title": "Routines",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "snapshot_id",
+    "home_id",
+    "revision",
+    "timestamp",
+    "changes",
+    "rooms",
+    "people",
+    "devices",
+    "preferences",
+    "routines"
+  ],
+  "title": "WorldSnapshot",
+  "type": "object"
+}

@@ -1,0 +1,1550 @@
+{
+  "$defs": {
+    "Action": {
+      "enum": [
+        "start_cleaning",
+        "pause_cleaning",
+        "resume_cleaning",
+        "return_to_dock",
+        "set_mode",
+        "set_power",
+        "set_target_temperature",
+        "set_airflow_target",
+        "set_curtain_position"
+      ],
+      "title": "Action",
+      "type": "string"
+    },
+    "Activity": {
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "$ref": "#/$defs/ActivityLabel"
+        },
+        "confidence": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Confidence"
+        },
+        "confirmed": {
+          "title": "Confirmed",
+          "type": "boolean"
+        },
+        "stable_for_s": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Stable For S"
+        },
+        "evidence": {
+          "$ref": "#/$defs/Evidence"
+        }
+      },
+      "required": [
+        "label",
+        "confidence",
+        "confirmed",
+        "stable_for_s",
+        "evidence"
+      ],
+      "title": "Activity",
+      "type": "object"
+    },
+    "ActivityLabel": {
+      "enum": [
+        "resting",
+        "meeting",
+        "working",
+        "cooking",
+        "idle",
+        "other",
+        "unknown"
+      ],
+      "title": "ActivityLabel",
+      "type": "string"
+    },
+    "Audio": {
+      "additionalProperties": false,
+      "properties": {
+        "context": {
+          "$ref": "#/$defs/AudioContext"
+        },
+        "confidence": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Confidence"
+        },
+        "evidence": {
+          "$ref": "#/$defs/Evidence"
+        }
+      },
+      "required": [
+        "context",
+        "confidence",
+        "evidence"
+      ],
+      "title": "Audio",
+      "type": "object"
+    },
+    "AudioContext": {
+      "enum": [
+        "SILENT",
+        "SPEECH",
+        "CONVERSATION",
+        "MUSIC",
+        "TV",
+        "LOUD_NOISE",
+        "UNKNOWN"
+      ],
+      "title": "AudioContext",
+      "type": "string"
+    },
+    "Availability": {
+      "enum": [
+        "online",
+        "stale",
+        "offline",
+        "unknown"
+      ],
+      "title": "Availability",
+      "type": "string"
+    },
+    "Capabilities": {
+      "additionalProperties": false,
+      "properties": {
+        "actions": {
+          "items": {
+            "$ref": "#/$defs/Action"
+          },
+          "title": "Actions",
+          "type": "array"
+        },
+        "modes": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Modes",
+          "type": "array"
+        },
+        "temperature": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TemperatureRange"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "airflow_target": {
+          "anyOf": [
+            {
+              "const": "person",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Airflow Target"
+        }
+      },
+      "required": [
+        "actions",
+        "modes",
+        "temperature",
+        "airflow_target"
+      ],
+      "title": "Capabilities",
+      "type": "object"
+    },
+    "ClockMode": {
+      "enum": [
+        "live",
+        "replay"
+      ],
+      "title": "ClockMode",
+      "type": "string"
+    },
+    "Device": {
+      "additionalProperties": false,
+      "properties": {
+        "device_id": {
+          "minLength": 1,
+          "title": "Device Id",
+          "type": "string"
+        },
+        "room_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Room Id"
+        },
+        "kind": {
+          "$ref": "#/$defs/DeviceKind"
+        },
+        "online": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Online"
+        },
+        "manual_override": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Manual Override"
+        },
+        "state_revision": {
+          "minimum": 0,
+          "title": "State Revision",
+          "type": "integer"
+        },
+        "evidence": {
+          "$ref": "#/$defs/Evidence"
+        },
+        "state": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/VacuumState"
+            },
+            {
+              "$ref": "#/$defs/WasherState"
+            },
+            {
+              "$ref": "#/$defs/AcState"
+            },
+            {
+              "$ref": "#/$defs/LightState"
+            },
+            {
+              "$ref": "#/$defs/CurtainState"
+            },
+            {
+              "$ref": "#/$defs/PurifierState"
+            }
+          ],
+          "description": "kind에 맞는 state. allOf의 if/then으로 짝을 고정한다."
+        },
+        "capabilities": {
+          "$ref": "#/$defs/Capabilities"
+        }
+      },
+      "required": [
+        "device_id",
+        "room_id",
+        "kind",
+        "online",
+        "manual_override",
+        "state_revision",
+        "evidence",
+        "state",
+        "capabilities"
+      ],
+      "title": "Device",
+      "type": "object",
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "vacuum"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "$ref": "#/$defs/VacuumState"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "washer"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "$ref": "#/$defs/WasherState"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "ac"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "$ref": "#/$defs/AcState"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "light"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "$ref": "#/$defs/LightState"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "curtain"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "$ref": "#/$defs/CurtainState"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "purifier"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "$ref": "#/$defs/PurifierState"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "DeviceKind": {
+      "enum": [
+        "vacuum",
+        "washer",
+        "ac",
+        "light",
+        "curtain",
+        "purifier"
+      ],
+      "title": "DeviceKind",
+      "type": "string"
+    },
+    "Evidence": {
+      "additionalProperties": false,
+      "description": "관측 하나의 근거. current는 TTL 안이라는 뜻일 뿐 confidence나 사실 확정과 다르다.",
+      "properties": {
+        "observed_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Observed At"
+        },
+        "source": {
+          "$ref": "#/$defs/EvidenceSource"
+        },
+        "node_ids": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Node Ids",
+          "type": "array"
+        },
+        "freshness": {
+          "$ref": "#/$defs/Freshness"
+        }
+      },
+      "required": [
+        "observed_at",
+        "source",
+        "node_ids",
+        "freshness"
+      ],
+      "title": "Evidence",
+      "type": "object"
+    },
+    "EvidenceSource": {
+      "enum": [
+        "node",
+        "device_sensor",
+        "world_inference",
+        "app",
+        "synthetic",
+        "unknown"
+      ],
+      "title": "EvidenceSource",
+      "type": "string"
+    },
+    "Freshness": {
+      "enum": [
+        "current",
+        "stale",
+        "unavailable"
+      ],
+      "title": "Freshness",
+      "type": "string"
+    },
+    "IdentitySource": {
+      "enum": [
+        "FACE",
+        "VOICE",
+        "TRACK_CARRIED",
+        "UNKNOWN"
+      ],
+      "title": "IdentitySource",
+      "type": "string"
+    },
+    "Light": {
+      "additionalProperties": false,
+      "properties": {
+        "level": {
+          "$ref": "#/$defs/LightLevel"
+        },
+        "confidence": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Confidence"
+        },
+        "evidence": {
+          "$ref": "#/$defs/Evidence"
+        }
+      },
+      "required": [
+        "level",
+        "confidence",
+        "evidence"
+      ],
+      "title": "Light",
+      "type": "object"
+    },
+    "LightLevel": {
+      "enum": [
+        "DARK",
+        "DIM",
+        "BRIGHT",
+        "UNKNOWN"
+      ],
+      "title": "LightLevel",
+      "type": "string"
+    },
+    "Measurement": {
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Value"
+        },
+        "evidence": {
+          "$ref": "#/$defs/Evidence"
+        }
+      },
+      "required": [
+        "value",
+        "evidence"
+      ],
+      "title": "Measurement",
+      "type": "object"
+    },
+    "Motion": {
+      "enum": [
+        "STILL",
+        "SLIGHT",
+        "ACTIVE",
+        "UNKNOWN"
+      ],
+      "title": "Motion",
+      "type": "string"
+    },
+    "NodeInfo": {
+      "additionalProperties": false,
+      "properties": {
+        "node_id": {
+          "minLength": 1,
+          "title": "Node Id",
+          "type": "string"
+        },
+        "room_id": {
+          "minLength": 1,
+          "title": "Room Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "minLength": 1,
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "availability": {
+          "$ref": "#/$defs/Availability"
+        },
+        "last_event_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Last Event Id"
+        },
+        "last_seq": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Last Seq"
+        },
+        "last_timestamp": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Last Timestamp"
+        },
+        "received_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Received At"
+        },
+        "supports_speak": {
+          "title": "Supports Speak",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "node_id",
+        "room_id",
+        "schema_version",
+        "availability",
+        "last_event_id",
+        "last_seq",
+        "last_timestamp",
+        "received_at",
+        "supports_speak"
+      ],
+      "title": "NodeInfo",
+      "type": "object"
+    },
+    "Occupancy": {
+      "additionalProperties": false,
+      "properties": {
+        "state": {
+          "$ref": "#/$defs/OccupancyState"
+        },
+        "confidence": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Confidence"
+        },
+        "stable_for_s": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Stable For S"
+        },
+        "evidence": {
+          "$ref": "#/$defs/Evidence"
+        }
+      },
+      "required": [
+        "state",
+        "confidence",
+        "stable_for_s",
+        "evidence"
+      ],
+      "title": "Occupancy",
+      "type": "object"
+    },
+    "OccupancyState": {
+      "enum": [
+        "OCCUPIED",
+        "EMPTY",
+        "UNKNOWN"
+      ],
+      "title": "OccupancyState",
+      "type": "string"
+    },
+    "Person": {
+      "additionalProperties": false,
+      "properties": {
+        "person_id": {
+          "minLength": 1,
+          "title": "Person Id",
+          "type": "string"
+        },
+        "profile_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Profile Id"
+        },
+        "room_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Room Id"
+        },
+        "identity": {
+          "minLength": 1,
+          "title": "Identity",
+          "type": "string"
+        },
+        "identity_confidence": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Identity Confidence"
+        },
+        "identity_source": {
+          "$ref": "#/$defs/IdentitySource"
+        },
+        "posture": {
+          "$ref": "#/$defs/Posture"
+        },
+        "posture_confidence": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Posture Confidence"
+        },
+        "motion": {
+          "$ref": "#/$defs/Motion"
+        },
+        "track_refs": {
+          "items": {
+            "$ref": "#/$defs/TrackRef"
+          },
+          "title": "Track Refs",
+          "type": "array"
+        },
+        "activity": {
+          "$ref": "#/$defs/Activity"
+        },
+        "position": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Position"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evidence": {
+          "$ref": "#/$defs/Evidence"
+        }
+      },
+      "required": [
+        "person_id",
+        "profile_id",
+        "room_id",
+        "identity",
+        "identity_confidence",
+        "identity_source",
+        "posture",
+        "posture_confidence",
+        "motion",
+        "track_refs",
+        "activity",
+        "position",
+        "evidence"
+      ],
+      "title": "Person",
+      "type": "object"
+    },
+    "Position": {
+      "additionalProperties": false,
+      "properties": {
+        "frame": {
+          "const": "room_local",
+          "title": "Frame",
+          "type": "string"
+        },
+        "x": {
+          "title": "X",
+          "type": "number"
+        },
+        "y": {
+          "title": "Y",
+          "type": "number"
+        },
+        "evidence": {
+          "$ref": "#/$defs/Evidence"
+        }
+      },
+      "required": [
+        "frame",
+        "x",
+        "y",
+        "evidence"
+      ],
+      "title": "Position",
+      "type": "object"
+    },
+    "Posture": {
+      "enum": [
+        "STANDING",
+        "SITTING",
+        "LYING",
+        "WALKING",
+        "UNKNOWN"
+      ],
+      "title": "Posture",
+      "type": "string"
+    },
+    "Profile": {
+      "additionalProperties": false,
+      "properties": {
+        "profile_id": {
+          "minLength": 1,
+          "title": "Profile Id",
+          "type": "string"
+        },
+        "identity": {
+          "minLength": 1,
+          "title": "Identity",
+          "type": "string"
+        },
+        "preferred_min_c": {
+          "anyOf": [
+            {
+              "maximum": 60,
+              "minimum": -10,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Preferred Min C"
+        },
+        "preferred_max_c": {
+          "anyOf": [
+            {
+              "maximum": 60,
+              "minimum": -10,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Preferred Max C"
+        },
+        "quiet_rest": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Quiet Rest"
+        },
+        "quiet_meeting": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Quiet Meeting"
+        }
+      },
+      "required": [
+        "profile_id",
+        "identity",
+        "preferred_min_c",
+        "preferred_max_c",
+        "quiet_rest",
+        "quiet_meeting"
+      ],
+      "title": "Profile",
+      "type": "object"
+    },
+    "Room": {
+      "additionalProperties": false,
+      "properties": {
+        "room_id": {
+          "minLength": 1,
+          "title": "Room Id",
+          "type": "string"
+        },
+        "room_type": {
+          "$ref": "#/$defs/RoomType"
+        },
+        "occupancy": {
+          "$ref": "#/$defs/Occupancy"
+        },
+        "audio": {
+          "$ref": "#/$defs/Audio"
+        },
+        "light": {
+          "$ref": "#/$defs/Light"
+        },
+        "temperature_c": {
+          "$ref": "#/$defs/Measurement"
+        },
+        "humidity_pct": {
+          "$ref": "#/$defs/Measurement"
+        },
+        "pm25_ug_m3": {
+          "$ref": "#/$defs/Measurement"
+        },
+        "pm25_trend_per_min": {
+          "$ref": "#/$defs/Measurement"
+        }
+      },
+      "required": [
+        "room_id",
+        "room_type",
+        "occupancy",
+        "audio",
+        "light",
+        "temperature_c",
+        "humidity_pct",
+        "pm25_ug_m3",
+        "pm25_trend_per_min"
+      ],
+      "title": "Room",
+      "type": "object"
+    },
+    "RoomLink": {
+      "additionalProperties": false,
+      "properties": {
+        "room_a": {
+          "minLength": 1,
+          "title": "Room A",
+          "type": "string"
+        },
+        "room_b": {
+          "minLength": 1,
+          "title": "Room B",
+          "type": "string"
+        },
+        "passable": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Passable"
+        }
+      },
+      "required": [
+        "room_a",
+        "room_b",
+        "passable"
+      ],
+      "title": "RoomLink",
+      "type": "object"
+    },
+    "RoomType": {
+      "enum": [
+        "bedroom",
+        "living",
+        "kitchen",
+        "laundry",
+        "hallway",
+        "other",
+        "unknown"
+      ],
+      "title": "RoomType",
+      "type": "string"
+    },
+    "Routine": {
+      "additionalProperties": false,
+      "properties": {
+        "routine_id": {
+          "minLength": 1,
+          "title": "Routine Id",
+          "type": "string"
+        },
+        "occurrence_id": {
+          "minLength": 1,
+          "title": "Occurrence Id",
+          "type": "string"
+        },
+        "device_id": {
+          "minLength": 1,
+          "title": "Device Id",
+          "type": "string"
+        },
+        "room_ids": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Room Ids",
+          "type": "array"
+        },
+        "due": {
+          "title": "Due",
+          "type": "boolean"
+        },
+        "requested_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Requested At"
+        },
+        "deadline_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Deadline At"
+        }
+      },
+      "required": [
+        "routine_id",
+        "occurrence_id",
+        "device_id",
+        "room_ids",
+        "due",
+        "requested_at",
+        "deadline_at"
+      ],
+      "title": "Routine",
+      "type": "object"
+    },
+    "TemperatureRange": {
+      "additionalProperties": false,
+      "properties": {
+        "min_c": {
+          "title": "Min C",
+          "type": "number"
+        },
+        "max_c": {
+          "title": "Max C",
+          "type": "number"
+        },
+        "step_c": {
+          "exclusiveMinimum": 0,
+          "title": "Step C",
+          "type": "number"
+        }
+      },
+      "required": [
+        "min_c",
+        "max_c",
+        "step_c"
+      ],
+      "title": "TemperatureRange",
+      "type": "object"
+    },
+    "TrackRef": {
+      "additionalProperties": false,
+      "properties": {
+        "node_id": {
+          "minLength": 1,
+          "title": "Node Id",
+          "type": "string"
+        },
+        "track_id": {
+          "minimum": 0,
+          "title": "Track Id",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "node_id",
+        "track_id"
+      ],
+      "title": "TrackRef",
+      "type": "object"
+    },
+    "UserRestriction": {
+      "additionalProperties": false,
+      "properties": {
+        "restriction_id": {
+          "minLength": 1,
+          "title": "Restriction Id",
+          "type": "string"
+        },
+        "target_type": {
+          "enum": [
+            "room",
+            "device"
+          ],
+          "title": "Target Type",
+          "type": "string"
+        },
+        "target_id": {
+          "minLength": 1,
+          "title": "Target Id",
+          "type": "string"
+        },
+        "action": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Action"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "expires_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Expires At"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "restriction_id",
+        "target_type",
+        "target_id",
+        "action",
+        "expires_at",
+        "reason"
+      ],
+      "title": "UserRestriction",
+      "type": "object"
+    },
+    "VacuumState": {
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "enum": [
+            "idle",
+            "cleaning",
+            "paused",
+            "returning",
+            "docked",
+            "completed",
+            "error",
+            "unknown"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "mode": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Mode"
+        },
+        "target_room_ids": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Target Room Ids",
+          "type": "array"
+        },
+        "dock_room_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Dock Room Id"
+        }
+      },
+      "required": [
+        "status",
+        "mode",
+        "target_room_ids",
+        "dock_room_id"
+      ],
+      "title": "VacuumState",
+      "type": "object"
+    },
+    "WasherState": {
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "enum": [
+            "off",
+            "idle",
+            "running",
+            "paused",
+            "completed",
+            "error",
+            "unknown"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "mode": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Mode"
+        }
+      },
+      "required": [
+        "status",
+        "mode"
+      ],
+      "title": "WasherState",
+      "type": "object"
+    },
+    "AcState": {
+      "additionalProperties": false,
+      "properties": {
+        "power": {
+          "enum": [
+            "on",
+            "off",
+            "unknown"
+          ],
+          "title": "Power",
+          "type": "string"
+        },
+        "mode": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Mode"
+        },
+        "target_c": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Target C"
+        },
+        "airflow_target_person_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Airflow Target Person Id"
+        }
+      },
+      "required": [
+        "power",
+        "mode",
+        "target_c",
+        "airflow_target_person_id"
+      ],
+      "title": "AcState",
+      "type": "object"
+    },
+    "LightState": {
+      "additionalProperties": false,
+      "properties": {
+        "power": {
+          "enum": [
+            "on",
+            "off",
+            "unknown"
+          ],
+          "title": "Power",
+          "type": "string"
+        }
+      },
+      "required": [
+        "power"
+      ],
+      "title": "LightState",
+      "type": "object"
+    },
+    "CurtainState": {
+      "additionalProperties": false,
+      "properties": {
+        "position_pct": {
+          "anyOf": [
+            {
+              "maximum": 100,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Position Pct"
+        },
+        "status": {
+          "enum": [
+            "stationary",
+            "opening",
+            "closing",
+            "error",
+            "unknown"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "position_pct",
+        "status"
+      ],
+      "title": "CurtainState",
+      "type": "object"
+    },
+    "PurifierState": {
+      "additionalProperties": false,
+      "properties": {
+        "power": {
+          "enum": [
+            "on",
+            "off",
+            "unknown"
+          ],
+          "title": "Power",
+          "type": "string"
+        },
+        "mode": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Mode"
+        }
+      },
+      "required": [
+        "power",
+        "mode"
+      ],
+      "title": "PurifierState",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "2.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "home_id": {
+      "minLength": 1,
+      "title": "Home Id",
+      "type": "string"
+    },
+    "world_session_id": {
+      "format": "uuid",
+      "title": "World Session Id",
+      "type": "string"
+    },
+    "world_revision": {
+      "minimum": 0,
+      "title": "World Revision",
+      "type": "integer"
+    },
+    "as_of": {
+      "format": "date-time",
+      "title": "As Of",
+      "type": "string"
+    },
+    "clock_mode": {
+      "$ref": "#/$defs/ClockMode"
+    },
+    "nodes": {
+      "items": {
+        "$ref": "#/$defs/NodeInfo"
+      },
+      "title": "Nodes",
+      "type": "array"
+    },
+    "rooms": {
+      "items": {
+        "$ref": "#/$defs/Room"
+      },
+      "minItems": 1,
+      "title": "Rooms",
+      "type": "array"
+    },
+    "people": {
+      "items": {
+        "$ref": "#/$defs/Person"
+      },
+      "title": "People",
+      "type": "array"
+    },
+    "devices": {
+      "items": {
+        "$ref": "#/$defs/Device"
+      },
+      "title": "Devices",
+      "type": "array"
+    },
+    "profiles": {
+      "items": {
+        "$ref": "#/$defs/Profile"
+      },
+      "title": "Profiles",
+      "type": "array"
+    },
+    "routines": {
+      "items": {
+        "$ref": "#/$defs/Routine"
+      },
+      "title": "Routines",
+      "type": "array"
+    },
+    "room_influence": {
+      "additionalProperties": {
+        "additionalProperties": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "propertyNames": {
+          "minLength": 1
+        },
+        "type": "object"
+      },
+      "propertyNames": {
+        "minLength": 1
+      },
+      "title": "Room Influence",
+      "type": "object"
+    },
+    "room_links": {
+      "items": {
+        "$ref": "#/$defs/RoomLink"
+      },
+      "title": "Room Links",
+      "type": "array"
+    },
+    "user_restrictions": {
+      "items": {
+        "$ref": "#/$defs/UserRestriction"
+      },
+      "title": "User Restrictions",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "home_id",
+    "world_session_id",
+    "world_revision",
+    "as_of",
+    "clock_mode",
+    "nodes",
+    "rooms",
+    "people",
+    "devices",
+    "profiles",
+    "routines",
+    "room_influence",
+    "room_links",
+    "user_restrictions"
+  ],
+  "title": "WorldSnapshot 2.0",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/HY-LG-EYEAR/eyear-worldmodel/WorldSnapshot_2_0.schema.json"
+}

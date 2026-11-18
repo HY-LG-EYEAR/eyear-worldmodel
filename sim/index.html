@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EYEAR 집 시뮬레이터</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="css/sim.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">EYEAR · 집 시뮬레이터 v0.1</div>
+    <h1>가짜 Node → World Model → 중앙 판단 → 가상 가전</h1>
+    <p class="lede">시나리오(summer_evening)를 시계에 맞춰 흘려보내면, 화면의 모든 값이 실제로 계산되어 나옵니다. 평면도의 사람·청소기·에어컨 바람은 World Model이 만든 스냅샷과 가전 상태 메시지만 보고 그립니다. 사람 위 두 줄은 "누구 · 확인 방식"과 "자세 · 활동 · 경과 시간", 가전 옆 말풍선은 그 가전이 왜 움직였는지입니다. 노란 줄은 직전 값과 달라진 부분입니다.</p>
+  </header>
+
+  <div class="layout">
+    <div class="mapcol">
+      <div class="card">
+        <div class="controls" id="chips" role="group" aria-label="시나리오 단계"></div>
+        <div class="timeline" id="timeline" title="누르면 그 시각으로 이동"><div class="fill" id="tlFill"></div></div>
+        <div class="simbar">
+          <div class="grp">
+            <button class="navbtn primary" id="play" type="button">재생</button>
+            <button class="navbtn" id="next" type="button">다음 단계</button>
+            <button class="navbtn" id="reset" type="button">처음으로</button>
+          </div>
+          <div class="grp" role="group" aria-label="배속">
+            <button class="mini" data-speed="1" type="button">1×</button>
+            <button class="mini" data-speed="2" type="button">2×</button>
+            <button class="mini" data-speed="4" type="button">4×</button>
+            <button class="mini" data-speed="8" type="button">8×</button>
+          </div>
+          <span class="clock" id="clock"></span>
+        </div>
+
+        <div class="mapbox" id="mapbox">
+          <svg id="plan" viewBox="70 170 1390 1660" role="img" aria-label="우리집 평면도">
+            <defs>
+              <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
+                <path d="M50 0H0V50" fill="none" style="stroke: var(--line)" stroke-width="1"/>
+              </pattern>
+              <pattern id="hatch" width="22" height="22" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                <rect width="22" height="22" style="fill: var(--surface)" opacity=".55"/>
+                <line x1="0" y1="0" x2="0" y2="22" style="stroke: var(--noise)" stroke-width="5" opacity=".35"/>
+              </pattern>
+              <marker id="arrow" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M0,0 L10,5 L0,10 z" style="fill: var(--temp)"/>
+              </marker>
+            </defs>
+
+            <!-- floors (원본 그대로) -->
+            <rect class="floor" x="100" y="195" width="620" height="495"/>
+            <polygon class="floor" points="720,195 1010,195 1010,995 810,995 810,690 720,690"/>
+            <rect class="floor" x="1010" y="195" width="420" height="150"/>
+            <rect class="floor r1" x="1010" y="345" width="420" height="340"/>
+            <rect class="floor" x="1010" y="685" width="420" height="150"/>
+            <rect class="floor" x="1010" y="835" width="420" height="160"/>
+            <rect class="floor" x="100" y="690" width="710" height="910"/>
+            <rect class="floor" x="810" y="995" width="620" height="605"/>
+            <rect class="floor" x="100" y="1600" width="1330" height="200"/>
+            <rect class="gridbg" x="100" y="195" width="1330" height="1605" opacity=".55"/>
+
+            <!-- 방 재실 표시 (World Model occupancy) -->
+            <g id="occLayer"></g>
+
+            <!-- room labels -->
+            <text class="rlabel" x="125" y="240">방2</text>
+            <text class="rlabel" x="740" y="305">부엌</text>
+            <text class="rlabel" x="1024" y="236" style="font-size:24px">세탁실</text>
+            <text class="rlabel r1" x="1024" y="520">방1</text>
+            <text class="rlabel" x="1030" y="730">화1</text>
+            <text class="rlabel" x="1030" y="880">화2</text>
+            <text class="rlabel" x="125" y="735">거실</text>
+            <text class="rlabel" x="835" y="1040">방3</text>
+            <text class="rlabel" x="125" y="1645">베란다</text>
+
+            <!-- furniture -->
+            <rect class="furn" x="1130" y="222" width="180" height="86" rx="10"/>
+            <text class="furntext" x="1220" y="272" text-anchor="middle">세탁기</text>
+            <text class="washtext" id="washTxt" x="1220" y="334" text-anchor="middle"></text>
+            <rect class="furn" x="1100" y="352" width="324" height="132" rx="8"/>
+            <rect class="furn" x="1366" y="366" width="46" height="104" rx="8"/>
+            <text class="furntext" x="1118" y="472">침대</text>
+            <rect class="furn" x="1140" y="655" width="190" height="24" rx="5"/>
+            <rect class="furn" x="108" y="1030" width="105" height="430" rx="14"/>
+            <text class="furntext" x="160" y="1243" text-anchor="middle">소파</text>
+            <rect class="tvglow" x="690" y="1045" width="62" height="385"/>
+            <rect class="furn" x="752" y="1045" width="40" height="385" rx="4"/>
+            <text class="furntext" x="738" y="1243" text-anchor="end">TV</text>
+            <circle class="furn" cx="770" cy="1530" r="42"/>
+            <text class="furntext" x="770" y="1538" text-anchor="middle" style="font-size:19px">에어컨</text>
+            <rect class="dock" x="724" y="550" width="36" height="58" rx="6"/>
+            <text class="small" x="726" y="538">도크</text>
+
+            <!-- walls -->
+            <path class="wall" d="
+              M100 195 H1430 M1430 195 V380 M1430 470 V1800 M1430 1800 H100 M100 1800 V875 M100 815 V195
+              M720 195 V690 M100 690 H535 M600 690 H720
+              M1010 195 V240 M1010 295 V545 M1010 610 V745 M1010 800 V995
+              M1010 345 H1430 M1010 685 H1430 M1010 835 H1430
+              M810 995 H950 M1005 995 H1280 M1340 995 H1430
+              M810 995 V1600
+              M100 1600 H600 M665 1600 H1430"/>
+            <path class="door" d="M1010 240 L1065 240 A55 55 0 0 1 1010 295"/>
+            <path class="door" d="M1010 545 L1075 545 A65 65 0 0 1 1010 610"/>
+            <path class="door" d="M1010 745 L1065 745 A55 55 0 0 1 1010 800"/>
+            <path class="door" d="M535 690 L535 755 A65 65 0 0 0 600 690"/>
+            <path class="door" d="M100 815 L160 815 A60 60 0 0 1 100 875"/>
+            <path class="door" d="M950 995 L950 1050 A55 55 0 0 0 1005 995"/>
+            <path class="door" d="M1280 995 L1280 1055 A60 60 0 0 0 1340 995"/>
+            <path class="door" d="M600 1600 L600 1665 A65 65 0 0 0 665 1600"/>
+            <line class="window" x1="1430" y1="380" x2="1430" y2="470"/>
+
+            <!-- 방별 어둠 (World Model의 light 값) -->
+            <g id="nightLayer"></g>
+
+            <!-- washer noise -->
+            <g class="waves" id="waves">
+              <path class="wave w1" d="M1160 362 Q1220 392 1280 362"/>
+              <path class="wave w2" d="M1140 395 Q1220 440 1300 395"/>
+              <path class="wave w3" d="M1120 428 Q1220 490 1320 428"/>
+            </g>
+
+            <!-- airflow (가전 상태의 wind_to 사람 쪽으로) -->
+            <path class="flow" id="flow_ac_living" d="" marker-end="url(#arrow)"/>
+            <text class="flowtext" id="txt_ac_living" x="716" y="1590" text-anchor="end"></text>
+            <path class="flow" id="flow_ac_room1" d="" marker-end="url(#arrow)"/>
+            <text class="flowtext" id="txt_ac_room1" x="1130" y="642" style="font-size:20px"></text>
+
+            <!-- 방1 조명 -->
+            <g id="bulb" class="bulb on" transform="translate(1360 525)">
+              <circle class="glow" r="34"/>
+              <circle class="core" r="13"/>
+              <text class="bulbtext" y="44" text-anchor="middle">조명</text>
+            </g>
+
+            <!-- room1 curtain -->
+            <g id="curtOpen" class="curtain">
+              <rect x="1415" y="380" width="10" height="14"/>
+              <rect x="1415" y="456" width="10" height="14"/>
+            </g>
+            <rect id="curtClosed" class="curtain" x="1415" y="380" width="10" height="90" style="opacity:0"/>
+
+            <!-- 방 정보 (재실·온도·오염도) -->
+            <g id="infoLayer"></g>
+
+            <!-- Node: 방1은 원본 그림, 나머지는 작은 표시 -->
+            <polygon class="fov" points="1400,625 1030,470 1030,680"/>
+            <rect class="nodebody" id="nodeBody_room1" x="1396" y="598" width="24" height="54" rx="5"/>
+            <circle class="nodelens" cx="1408" cy="612" r="5"/>
+            <text class="nodetext" id="nodeText_room1" x="1388" y="590" text-anchor="end">Node</text>
+            <g id="nodeLayer"></g>
+
+            <!-- Node 끊김 표시 -->
+            <g id="staleLayer"></g>
+
+            <g id="peopleLayer"></g>
+
+            <g id="vac">
+              <circle class="vacbody" r="22"/>
+              <circle class="vaccore" r="7"/>
+              <text class="vactext" id="vacTxt" y="48">청소기</text>
+            </g>
+          </svg>
+        </div>
+        <div class="legend">
+          <span><i class="sw" style="border:2px solid var(--accent); background: var(--occ)"></i>사람 있음 (OCCUPIED)</span>
+          <span><i class="sw hatch"></i>Node 끊김 → 모름 (STALE)</span>
+          <span><i class="dotp"></i>보임 (SEEN)</span>
+          <span><i class="dotp held"></i>레이더만 (HELD)</span>
+          <span><i class="dotp transit"></i>이동 중 (IN_TRANSIT, 10초)</span>
+          <span><i class="dotp ghost"></i>위치 모름 (LAST_KNOWN)</span>
+          <span><i class="sw" style="background: var(--temp)"></i>에어컨 바람</span>
+          <span><i class="sw" style="background: var(--clean)"></i>로봇청소기</span>
+          <span><i class="sw" style="background: var(--accent-soft); border:1px solid var(--accent)"></i>방1 · 실물 Node 자리</span>
+        </div>
+
+        <div class="faults">
+          <div class="hint">장애 넣어 보기 — World Model이 "비어 있음"과 "모름"을 구분하는지 확인. (뒤로 이동하거나 처음으로 하면 초기화)</div>
+          <div class="row" id="faultRows"></div>
+          <div class="row">
+            <b>질문에 대한 대답</b>
+            <select class="mini" id="replySel" aria-label="가짜 음성 대답"></select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="datacol">
+      <section class="card now" aria-live="polite">
+        <div class="stepkey" id="stepKey"></div>
+        <h2 id="stepTitle"></h2>
+        <p id="stepDesc"></p>
+        <ul class="peoplenow" id="peopleNow"></ul>
+      </section>
+
+      <section class="card panel">
+        <h3>무슨 일이 있었고, 그래서 무엇을 했나 <span class="sub">World Model 변화 → 에이전트 판단 → 가전 결과 (최근 순)</span></h3>
+        <ol class="causal" id="causal"></ol>
+      </section>
+
+      <section class="card panel">
+        <h3><span class="num">1</span>Node가 보낸 메시지 <span class="sub">schema 0.1 · 가짜 송신기 (반석님 시나리오)</span></h3>
+        <div class="tabs" role="tablist" id="msgTabs"></div>
+        <div id="msgBody"></div>
+      </section>
+
+      <section class="card panel">
+        <h3><span class="num">2</span>World Model 스냅샷 <span class="sub">eyear/v0/world/snapshot · WorldSnapshot 0.1</span></h3>
+        <div class="snaphead" id="snapHead"></div>
+        <div class="tabs" role="tablist" id="snapTabs"></div>
+        <div id="snapBody"></div>
+        <ul class="issues" id="issues"></ul>
+      </section>
+
+      <section class="card panel">
+        <h3><span class="num">3</span>서브에이전트 권고 <span class="mockflag">임시 규칙</span></h3>
+        <div class="agents" id="agents"></div>
+      </section>
+
+      <section class="card panel">
+        <h3><span class="num">4</span>중앙 판단 · 명령 결과 <span class="mockflag">임시 규칙 (정빈님 자리)</span></h3>
+        <ul class="decisions" id="decisions"></ul>
+      </section>
+
+      <section class="card panel">
+        <h3><span class="num">5</span>가전 상태 <span class="sub">가상 가전이 보낸 state · result</span></h3>
+        <table class="devices" id="devices"></table>
+      </section>
+    </div>
+  </div>
+
+  <footer class="card assume">
+    <h3>이 시뮬레이터에서 임시로 정한 것</h3>
+    <ul>
+      <li>좌표: 방 좌표는 그 방 왼쪽 아래 모서리가 원점(x 동쪽, y 북쪽), 집 좌표는 평면도 왼쪽 아래가 원점(y 위쪽)입니다 (명세서 3절, 반석님과 11-12 합의). 스냅샷 position에는 둘 다 들어갑니다.</li>
+      <li>World Model 토픽(eyear/v0/world/snapshot)과 가전 토픽(eyear/v0/device/…)은 제안입니다. Node 토픽은 반석님 topics.py와 같습니다.</li>
+      <li>중앙 판단과 서브에이전트는 시나리오를 돌리기 위한 몇 줄짜리 규칙입니다. 정빈님 Orchestrator가 생기면 같은 토픽으로 바꿔 끼웁니다.</li>
+      <li>방 온도·오염도는 센서가 아니라 시뮬레이션 값입니다 (provenance: SIMULATED).</li>
+      <li>Node가 3초 동안 아무것도 안 보내면 STALE: 그 방은 "비어 있음"이 아니라 "모름"으로 봅니다.</li>
+      <li>가짜 대답의 문장부호·신뢰도는 반석님 실측값(schema_v0.md, 2026-11-11)을 따랐습니다. 질문 읽는 시간(글자당 0.12초)은 가정값입니다.</li>
+      <li>사람 presence: Node가 보면 SEEN → 안 보이는데 방은 OCCUPIED면 HELD → 방이 EMPTY가 되면 IN_TRANSIT(10초, 자세·활동은 UNKNOWN) → 그 뒤 LAST_KNOWN. 방 Node가 끊겨도 LAST_KNOWN. 레이더 연동(M5) 뒤 실제 동작과 맞춰 봐야 합니다.</li>
+      <li>휴식 회차(rest_episode)는 Node에서 RESTING이 아니던 값이 RESTING으로 바뀌는 걸 관측했을 때만 올라갑니다. 중앙은 (person_id, rest_episode)마다 한 번만 "주무실 건가요?"를 묻습니다.</li>
+      <li>revision은 명세서의 변화 종류(changes)가 있을 때만 올라가고, 스냅샷은 1초마다 같은 revision으로 다시 나갑니다. 이때 온도·먼지·배터리·시각 같은 연속 값은 바뀔 수 있습니다.</li>
+    </ul>
+  </footer>
+</div>
+
+<script src="js/home.js"></script>
+<script src="js/core.js"></script>
+<script src="js/words.js"></script>
+<script src="js/scenario.js"></script>
+<script src="js/devices.js"></script>
+<script src="js/worldmodel.js"></script>
+<script src="js/mock_orchestrator.js"></script>
+<script src="js/view.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

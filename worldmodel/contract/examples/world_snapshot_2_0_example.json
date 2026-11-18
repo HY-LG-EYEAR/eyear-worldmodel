@@ -1,0 +1,751 @@
+{
+  "schema_version": "2.0",
+  "home_id": "home_demo_01",
+  "world_session_id": "592066b1-2467-47d3-a48a-f27b2e567fe7",
+  "world_revision": 102,
+  "as_of": "2026-11-13T21:04:30+09:00",
+  "clock_mode": "replay",
+  "nodes": [
+    {
+      "node_id": "node_room1",
+      "room_id": "room1",
+      "schema_version": "0.1",
+      "availability": "online",
+      "last_event_id": "00000000-0000-4000-8000-000000000001",
+      "last_seq": 42,
+      "last_timestamp": "2026-11-13T21:04:30+09:00",
+      "received_at": "2026-11-13T21:04:30+09:00",
+      "supports_speak": true
+    },
+    {
+      "node_id": "mock_living",
+      "room_id": "living",
+      "schema_version": "0.1",
+      "availability": "online",
+      "last_event_id": "00000000-0000-4000-8000-000000000002",
+      "last_seq": 42,
+      "last_timestamp": "2026-11-13T21:04:30+09:00",
+      "received_at": "2026-11-13T21:04:30+09:00",
+      "supports_speak": true
+    }
+  ],
+  "rooms": [
+    {
+      "room_id": "room1",
+      "room_type": "bedroom",
+      "occupancy": {
+        "state": "OCCUPIED",
+        "confidence": 0.95,
+        "stable_for_s": 30,
+        "evidence": {
+          "observed_at": "2026-11-13T21:04:30+09:00",
+          "source": "synthetic",
+          "node_ids": [
+            "node_room1"
+          ],
+          "freshness": "current"
+        }
+      },
+      "audio": {
+        "context": "SILENT",
+        "confidence": 0.8,
+        "evidence": {
+          "observed_at": "2026-11-13T21:04:30+09:00",
+          "source": "synthetic",
+          "node_ids": [
+            "node_room1"
+          ],
+          "freshness": "current"
+        }
+      },
+      "light": {
+        "level": "BRIGHT",
+        "confidence": null,
+        "evidence": {
+          "observed_at": "2026-11-13T21:04:30+09:00",
+          "source": "synthetic",
+          "node_ids": [
+            "node_room1"
+          ],
+          "freshness": "current"
+        }
+      },
+      "temperature_c": {
+        "value": null,
+        "evidence": {
+          "observed_at": null,
+          "source": "unknown",
+          "node_ids": [],
+          "freshness": "unavailable"
+        }
+      },
+      "humidity_pct": {
+        "value": null,
+        "evidence": {
+          "observed_at": null,
+          "source": "unknown",
+          "node_ids": [],
+          "freshness": "unavailable"
+        }
+      },
+      "pm25_ug_m3": {
+        "value": null,
+        "evidence": {
+          "observed_at": null,
+          "source": "unknown",
+          "node_ids": [],
+          "freshness": "unavailable"
+        }
+      },
+      "pm25_trend_per_min": {
+        "value": null,
+        "evidence": {
+          "observed_at": null,
+          "source": "unknown",
+          "node_ids": [],
+          "freshness": "unavailable"
+        }
+      }
+    },
+    {
+      "room_id": "room2",
+      "room_type": "bedroom",
+      "occupancy": {
+        "state": "UNKNOWN",
+        "confidence": null,
+        "stable_for_s": null,
+        "evidence": {
+          "observed_at": null,
+          "source": "unknown",
+          "node_ids": [],
+          "freshness": "unavailable"
+        }
+      },
+      "audio": {
+        "context": "UNKNOWN",
+        "confidence": null,
+        "evidence": {
+          "observed_at": null,
+          "source": "unknown",
+          "node_ids": [],
+          "freshness": "unavailable"
+        }
+      },
+      "light": {
+        "level": "UNKNOWN",
+        "confidence": null,
+        "evidence": {
+          "observed_at": null,
+          "source": "unknown",
+          "node_ids": [],
+          "freshness": "unavailable"
+        }
+      },
+      "temperature_c": {
+        "value": null,
+        "evidence": {
+          "observed_at": null,
+          "source": "unknown",
+          "node_ids": [],
+          "freshness": "unavailable"
+        }
+      },
+      "humidity_pct": {
+        "value": null,
+        "evidence": {
+          "observed_at": null,
+          "source": "unknown",
+          "node_ids": [],
+          "freshness": "unavailable"
+        }
+      },
+      "pm25_ug_m3": {
+        "value": null,
+        "evidence": {
+          "observed_at": null,
+          "source": "unknown",
+          "node_ids": [],
+          "freshness": "unavailable"
+        }
+      },
+      "pm25_trend_per_min": {
+        "value": null,
+        "evidence": {
+          "observed_at": null,
+          "source": "unknown",
+          "node_ids": [],
+          "freshness": "unavailable"
+        }
+      }
+    },
+    {
+      "room_id": "living",
+      "room_type": "living",
+      "occupancy": {
+        "state": "OCCUPIED",
+        "confidence": 0.95,
+        "stable_for_s": 30,
+        "evidence": {
+          "observed_at": "2026-11-13T21:04:30+09:00",
+          "source": "synthetic",
+          "node_ids": [
+            "mock_living"
+          ],
+          "freshness": "current"
+        }
+      },
+      "audio": {
+        "context": "SILENT",
+        "confidence": 0.8,
+        "evidence": {
+          "observed_at": "2026-11-13T21:04:30+09:00",
+          "source": "synthetic",
+          "node_ids": [
+            "mock_living"
+          ],
+          "freshness": "current"
+        }
+      },
+      "light": {
+        "level": "BRIGHT",
+        "confidence": null,
+        "evidence": {
+          "observed_at": "2026-11-13T21:04:30+09:00",
+          "source": "synthetic",
+          "node_ids": [
+            "mock_living"
+          ],
+          "freshness": "current"
+        }
+      },
+      "temperature_c": {
+        "value": null,
+        "evidence": {
+          "observed_at": null,
+          "source": "unknown",
+          "node_ids": [],
+          "freshness": "unavailable"
+        }
+      },
+      "humidity_pct": {
+        "value": null,
+        "evidence": {
+          "observed_at": null,
+          "source": "unknown",
+          "node_ids": [],
+          "freshness": "unavailable"
+        }
+      },
+      "pm25_ug_m3": {
+        "value": null,
+        "evidence": {
+          "observed_at": null,
+          "source": "unknown",
+          "node_ids": [],
+          "freshness": "unavailable"
+        }
+      },
+      "pm25_trend_per_min": {
+        "value": null,
+        "evidence": {
+          "observed_at": null,
+          "source": "unknown",
+          "node_ids": [],
+          "freshness": "unavailable"
+        }
+      }
+    },
+    {
+      "room_id": "kitchen",
+      "room_type": "kitchen",
+      "occupancy": {
+        "state": "UNKNOWN",
+        "confidence": null,
+        "stable_for_s": null,
+        "evidence": {
+          "observed_at": null,
+          "source": "unknown",
+          "node_ids": [],
+          "freshness": "unavailable"
+        }
+      },
+      "audio": {
+        "context": "UNKNOWN",
+        "confidence": null,
+        "evidence": {
+          "observed_at": null,
+          "source": "unknown",
+          "node_ids": [],
+          "freshness": "unavailable"
+        }
+      },
+      "light": {
+        "level": "UNKNOWN",
+        "confidence": null,
+        "evidence": {
+          "observed_at": null,
+          "source": "unknown",
+          "node_ids": [],
+          "freshness": "unavailable"
+        }
+      },
+      "temperature_c": {
+        "value": null,
+        "evidence": {
+          "observed_at": null,
+          "source": "unknown",
+          "node_ids": [],
+          "freshness": "unavailable"
+        }
+      },
+      "humidity_pct": {
+        "value": null,
+        "evidence": {
+          "observed_at": null,
+          "source": "unknown",
+          "node_ids": [],
+          "freshness": "unavailable"
+        }
+      },
+      "pm25_ug_m3": {
+        "value": null,
+        "evidence": {
+          "observed_at": null,
+          "source": "unknown",
+          "node_ids": [],
+          "freshness": "unavailable"
+        }
+      },
+      "pm25_trend_per_min": {
+        "value": null,
+        "evidence": {
+          "observed_at": null,
+          "source": "unknown",
+          "node_ids": [],
+          "freshness": "unavailable"
+        }
+      }
+    },
+    {
+      "room_id": "laundry",
+      "room_type": "laundry",
+      "occupancy": {
+        "state": "UNKNOWN",
+        "confidence": null,
+        "stable_for_s": null,
+        "evidence": {
+          "observed_at": null,
+          "source": "unknown",
+          "node_ids": [],
+          "freshness": "unavailable"
+        }
+      },
+      "audio": {
+        "context": "UNKNOWN",
+        "confidence": null,
+        "evidence": {
+          "observed_at": null,
+          "source": "unknown",
+          "node_ids": [],
+          "freshness": "unavailable"
+        }
+      },
+      "light": {
+        "level": "UNKNOWN",
+        "confidence": null,
+        "evidence": {
+          "observed_at": null,
+          "source": "unknown",
+          "node_ids": [],
+          "freshness": "unavailable"
+        }
+      },
+      "temperature_c": {
+        "value": null,
+        "evidence": {
+          "observed_at": null,
+          "source": "unknown",
+          "node_ids": [],
+          "freshness": "unavailable"
+        }
+      },
+      "humidity_pct": {
+        "value": null,
+        "evidence": {
+          "observed_at": null,
+          "source": "unknown",
+          "node_ids": [],
+          "freshness": "unavailable"
+        }
+      },
+      "pm25_ug_m3": {
+        "value": null,
+        "evidence": {
+          "observed_at": null,
+          "source": "unknown",
+          "node_ids": [],
+          "freshness": "unavailable"
+        }
+      },
+      "pm25_trend_per_min": {
+        "value": null,
+        "evidence": {
+          "observed_at": null,
+          "source": "unknown",
+          "node_ids": [],
+          "freshness": "unavailable"
+        }
+      }
+    }
+  ],
+  "people": [
+    {
+      "person_id": "person_a",
+      "profile_id": "profile_a",
+      "room_id": "room1",
+      "identity": "MEMBER_A",
+      "identity_confidence": 0.93,
+      "identity_source": "FACE",
+      "posture": "LYING",
+      "posture_confidence": 0.9,
+      "motion": "SLIGHT",
+      "track_refs": [
+        {
+          "node_id": "node_room1",
+          "track_id": 1
+        }
+      ],
+      "activity": {
+        "label": "resting",
+        "confidence": 0.86,
+        "confirmed": true,
+        "stable_for_s": 30,
+        "evidence": {
+          "observed_at": "2026-11-13T21:04:30+09:00",
+          "source": "synthetic",
+          "node_ids": [
+            "node_room1"
+          ],
+          "freshness": "current"
+        }
+      },
+      "position": {
+        "frame": "room_local",
+        "x": 2.4,
+        "y": 2.67,
+        "evidence": {
+          "observed_at": "2026-11-13T21:04:30+09:00",
+          "source": "synthetic",
+          "node_ids": [
+            "node_room1"
+          ],
+          "freshness": "current"
+        }
+      },
+      "evidence": {
+        "observed_at": "2026-11-13T21:04:30+09:00",
+        "source": "synthetic",
+        "node_ids": [
+          "node_room1"
+        ],
+        "freshness": "current"
+      }
+    },
+    {
+      "person_id": "person_b",
+      "profile_id": "profile_b",
+      "room_id": "living",
+      "identity": "MEMBER_B",
+      "identity_confidence": 0.93,
+      "identity_source": "FACE",
+      "posture": "SITTING",
+      "posture_confidence": 0.9,
+      "motion": "SLIGHT",
+      "track_refs": [
+        {
+          "node_id": "mock_living",
+          "track_id": 1
+        }
+      ],
+      "activity": {
+        "label": "other",
+        "confidence": 0.86,
+        "confirmed": true,
+        "stable_for_s": 30,
+        "evidence": {
+          "observed_at": "2026-11-13T21:04:30+09:00",
+          "source": "synthetic",
+          "node_ids": [
+            "mock_living"
+          ],
+          "freshness": "current"
+        }
+      },
+      "position": {
+        "frame": "room_local",
+        "x": 0.6,
+        "y": 4.2,
+        "evidence": {
+          "observed_at": "2026-11-13T21:04:30+09:00",
+          "source": "synthetic",
+          "node_ids": [
+            "mock_living"
+          ],
+          "freshness": "current"
+        }
+      },
+      "evidence": {
+        "observed_at": "2026-11-13T21:04:30+09:00",
+        "source": "synthetic",
+        "node_ids": [
+          "mock_living"
+        ],
+        "freshness": "current"
+      }
+    }
+  ],
+  "devices": [
+    {
+      "device_id": "vacuum_01",
+      "room_id": "kitchen",
+      "kind": "vacuum",
+      "online": true,
+      "manual_override": false,
+      "state_revision": 1,
+      "evidence": {
+        "observed_at": "2026-11-13T21:04:30+09:00",
+        "source": "synthetic",
+        "node_ids": [],
+        "freshness": "current"
+      },
+      "state": {
+        "status": "docked",
+        "mode": "normal",
+        "target_room_ids": [],
+        "dock_room_id": "kitchen"
+      },
+      "capabilities": {
+        "actions": [
+          "start_cleaning",
+          "pause_cleaning",
+          "resume_cleaning",
+          "return_to_dock",
+          "set_mode"
+        ],
+        "modes": [
+          "quiet",
+          "normal"
+        ],
+        "temperature": null,
+        "airflow_target": null
+      }
+    },
+    {
+      "device_id": "washer_01",
+      "room_id": "laundry",
+      "kind": "washer",
+      "online": true,
+      "manual_override": false,
+      "state_revision": 1,
+      "evidence": {
+        "observed_at": "2026-11-13T21:04:30+09:00",
+        "source": "synthetic",
+        "node_ids": [],
+        "freshness": "current"
+      },
+      "state": {
+        "status": "running",
+        "mode": "low_noise"
+      },
+      "capabilities": {
+        "actions": [
+          "set_mode"
+        ],
+        "modes": [
+          "normal",
+          "low_noise"
+        ],
+        "temperature": null,
+        "airflow_target": null
+      }
+    },
+    {
+      "device_id": "ac_room1",
+      "room_id": "room1",
+      "kind": "ac",
+      "online": true,
+      "manual_override": false,
+      "state_revision": 1,
+      "evidence": {
+        "observed_at": "2026-11-13T21:04:30+09:00",
+        "source": "synthetic",
+        "node_ids": [],
+        "freshness": "current"
+      },
+      "state": {
+        "power": "on",
+        "mode": "cool",
+        "target_c": 24,
+        "airflow_target_person_id": "person_a"
+      },
+      "capabilities": {
+        "actions": [
+          "set_power",
+          "set_mode",
+          "set_target_temperature",
+          "set_airflow_target"
+        ],
+        "modes": [
+          "cool"
+        ],
+        "temperature": {
+          "min_c": 18,
+          "max_c": 30,
+          "step_c": 1
+        },
+        "airflow_target": "person"
+      }
+    },
+    {
+      "device_id": "ac_living",
+      "room_id": "living",
+      "kind": "ac",
+      "online": true,
+      "manual_override": false,
+      "state_revision": 1,
+      "evidence": {
+        "observed_at": "2026-11-13T21:04:30+09:00",
+        "source": "synthetic",
+        "node_ids": [],
+        "freshness": "current"
+      },
+      "state": {
+        "power": "on",
+        "mode": "cool",
+        "target_c": 26,
+        "airflow_target_person_id": "person_b"
+      },
+      "capabilities": {
+        "actions": [
+          "set_power",
+          "set_mode",
+          "set_target_temperature",
+          "set_airflow_target"
+        ],
+        "modes": [
+          "cool"
+        ],
+        "temperature": {
+          "min_c": 18,
+          "max_c": 30,
+          "step_c": 1
+        },
+        "airflow_target": "person"
+      }
+    },
+    {
+      "device_id": "light_room1",
+      "room_id": "room1",
+      "kind": "light",
+      "online": true,
+      "manual_override": false,
+      "state_revision": 1,
+      "evidence": {
+        "observed_at": "2026-11-13T21:04:30+09:00",
+        "source": "synthetic",
+        "node_ids": [],
+        "freshness": "current"
+      },
+      "state": {
+        "power": "on"
+      },
+      "capabilities": {
+        "actions": [
+          "set_power"
+        ],
+        "modes": [],
+        "temperature": null,
+        "airflow_target": null
+      }
+    },
+    {
+      "device_id": "curtain_room1",
+      "room_id": "room1",
+      "kind": "curtain",
+      "online": true,
+      "manual_override": false,
+      "state_revision": 1,
+      "evidence": {
+        "observed_at": "2026-11-13T21:04:30+09:00",
+        "source": "synthetic",
+        "node_ids": [],
+        "freshness": "current"
+      },
+      "state": {
+        "position_pct": 100,
+        "status": "stationary"
+      },
+      "capabilities": {
+        "actions": [
+          "set_curtain_position"
+        ],
+        "modes": [],
+        "temperature": null,
+        "airflow_target": null
+      }
+    }
+  ],
+  "profiles": [
+    {
+      "profile_id": "profile_a",
+      "identity": "MEMBER_A",
+      "preferred_min_c": 23,
+      "preferred_max_c": 25,
+      "quiet_rest": true,
+      "quiet_meeting": true
+    },
+    {
+      "profile_id": "profile_b",
+      "identity": "MEMBER_B",
+      "preferred_min_c": 25,
+      "preferred_max_c": 27,
+      "quiet_rest": true,
+      "quiet_meeting": true
+    }
+  ],
+  "routines": [
+    {
+      "routine_id": "daily_clean",
+      "occurrence_id": "daily_clean_20261113_evening",
+      "device_id": "vacuum_01",
+      "room_ids": [
+        "room1"
+      ],
+      "due": true,
+      "requested_at": "2026-11-13T21:02:00+09:00",
+      "deadline_at": "2026-11-13T23:02:00+09:00"
+    }
+  ],
+  "room_influence": {
+    "laundry": {
+      "room1": 0.8,
+      "living": null
+    },
+    "room1": {
+      "living": 0.2
+    }
+  },
+  "room_links": [
+    {
+      "room_a": "room1",
+      "room_b": "living",
+      "passable": true
+    },
+    {
+      "room_a": "living",
+      "room_b": "kitchen",
+      "passable": true
+    }
+  ],
+  "user_restrictions": []
+}

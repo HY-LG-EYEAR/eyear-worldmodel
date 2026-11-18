@@ -1,0 +1,14 @@
+{
+  "schema_version": "0.1",
+  "event_id": "00000000-0000-4000-8000-000000000900",
+  "timestamp": "2026-10-30T22:01:09.600000+09:00",
+  "revision": 40,
+  "command_id": "00000000-0000-4000-8000-0000000000d1",
+  "device_id": "light_room1",
+  "action": "TURN_OFF",
+  "status": "COMPLETED",
+  "reason": null,
+  "state": {
+    "power": "OFF"
+  }
+}

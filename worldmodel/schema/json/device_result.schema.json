@@ -1,0 +1,107 @@
+{
+  "$defs": {
+    "CommandStatus": {
+      "enum": [
+        "ACCEPTED",
+        "REJECTED",
+        "COMPLETED",
+        "FAILED"
+      ],
+      "title": "CommandStatus",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "가전 실행 결과. 가전 어댑터 → World Model이 받아 home revision을 붙여 Orchestrator로 보낸다.",
+  "properties": {
+    "schema_version": {
+      "const": "0.1",
+      "default": "0.1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "event_id": {
+      "format": "uuid",
+      "title": "Event Id",
+      "type": "string"
+    },
+    "timestamp": {
+      "format": "date-time",
+      "title": "Timestamp",
+      "type": "string"
+    },
+    "revision": {
+      "description": "이 결과의 state가 반영된 home revision (그 snapshot도 같이 나감)",
+      "minimum": 0,
+      "title": "Revision",
+      "type": "integer"
+    },
+    "command_id": {
+      "format": "uuid",
+      "title": "Command Id",
+      "type": "string"
+    },
+    "device_id": {
+      "description": "소문자, 숫자, 밑줄",
+      "pattern": "^[a-z0-9_]+$",
+      "title": "Device Id",
+      "type": "string"
+    },
+    "action": {
+      "title": "Action",
+      "type": "string"
+    },
+    "status": {
+      "$ref": "#/$defs/CommandStatus"
+    },
+    "reason": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Reason"
+    },
+    "state": {
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "integer"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "description": "결과 직후 가전 상태 (관측값)",
+      "title": "State",
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema_version",
+    "event_id",
+    "timestamp",
+    "revision",
+    "command_id",
+    "device_id",
+    "action",
+    "status",
+    "reason",
+    "state"
+  ],
+  "title": "DeviceResultEvent",
+  "type": "object"
+}

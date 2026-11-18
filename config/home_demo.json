@@ -1,0 +1,43 @@
+{
+  "_comment": "시연용 집 설정. 방 ID·Node ID는 eyear-node와 같음. room_influence 수치와 TTL은 합의 전 제안값.",
+  "home_id": "home_demo_01",
+  "rooms": [
+    {"room_id": "room1", "room_type": "bedroom"},
+    {"room_id": "room2", "room_type": "bedroom"},
+    {"room_id": "living", "room_type": "living"},
+    {"room_id": "kitchen", "room_type": "kitchen"},
+    {"room_id": "laundry", "room_type": "laundry"}
+  ],
+  "nodes": [
+    {"node_id": "node_room1", "room_id": "room1", "supports_speak": true},
+    {"node_id": "node_room2", "room_id": "room2", "supports_speak": false},
+    {"node_id": "node_living", "room_id": "living", "supports_speak": false},
+    {"node_id": "node_laundry", "room_id": "laundry", "supports_speak": false}
+  ],
+  "identities": {
+    "MEMBER_A": "person_a",
+    "MEMBER_B": "person_b"
+  },
+  "room_influence": {
+    "laundry": {
+      "room1": 0.8,
+      "living": null
+    }
+  },
+  "room_links": [
+    {"room_a": "room1", "room_b": "living", "passable": true},
+    {"room_a": "room2", "room_b": "living", "passable": true},
+    {"room_a": "laundry", "room_b": "living", "passable": true},
+    {"room_a": "kitchen", "room_b": "living", "passable": true}
+  ],
+  "ttl": {
+    "node_s": 3,
+    "device_s": 10,
+    "measurement_s": 120,
+    "activity_confirm_s": 3,
+    "person_forget_s": 1800,
+    "heartbeat_publish_s": 1,
+    "keepalive_s": 30
+  },
+  "clock_mode": "live"
+}

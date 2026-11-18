@@ -1,0 +1,580 @@
+<title>EYEAR World Model 2.0</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;500;700&display=swap">
+<style>
+/* 레이아웃: 설계도면 같은 한 열 문서. 위에서 아래로 "누가→누구에게", "한 단계씩 보기", "받는 쪽 규칙", "폴더", "합의할 것" */
+:root {
+  --paper: #f5f7fa;
+  --sheet: #ffffff;
+  --ink: #18223a;
+  --muted: #5d6882;
+  --line: #d5dbe7;
+  --node: #0f7c74;      /* 반석 · Node */
+  --node-soft: #dff3f0;
+  --wm: #3d4fc4;        /* 이효창 · World Model */
+  --wm-soft: #e5e8fb;
+  --orc: #b86a00;       /* 정빈 · Orchestrator */
+  --orc-soft: #fbefdc;
+  --occ: #3d4fc4;
+  --occ-fill: #dfe3fb;
+  --empty-fill: #ffffff;
+  --unk-fill: #e6e9ef;
+  --hatch: #c3c9d6;
+  --bad: #c0392b;
+  --bad-soft: #fbe5e2;
+  --good: #1f8a4c;
+  --good-soft: #def3e6;
+  --code-bg: #f0f2f7;
+  --f-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "Consolas", monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper: #0f1420; --sheet: #161d2d; --ink: #e6eaf4; --muted: #9aa5bf; --line: #2b354b;
+  --node: #4cc3b6; --node-soft: #12302f; --wm: #8c9cff; --wm-soft: #1e2650; --orc: #f0a640; --orc-soft: #3a2a12;
+  --occ: #8c9cff; --occ-fill: #26306a; --empty-fill: #1b2232; --unk-fill: #232a3a; --hatch: #3a4560;
+  --bad: #ff7b6b; --bad-soft: #3d1d1a; --good: #5fd18e; --good-soft: #143022; --code-bg: #1b2232;
+  color-scheme: dark } }
+:root[data-theme="dark"] {
+  --paper: #0f1420; --sheet: #161d2d; --ink: #e6eaf4; --muted: #9aa5bf; --line: #2b354b;
+  --node: #4cc3b6; --node-soft: #12302f; --wm: #8c9cff; --wm-soft: #1e2650; --orc: #f0a640; --orc-soft: #3a2a12;
+  --occ: #8c9cff; --occ-fill: #26306a; --empty-fill: #1b2232; --unk-fill: #232a3a; --hatch: #3a4560;
+  --bad: #ff7b6b; --bad-soft: #3d1d1a; --good: #5fd18e; --good-soft: #143022; --code-bg: #1b2232;
+  color-scheme: dark }
+
+* { box-sizing: border-box }
+body { background: var(--paper); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.65;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 32px 64px }
+.wrap { max-width: 980px; margin: 0 auto; display: grid; gap: 56px }
+h1, h2, h3 { line-height: 1.3; text-wrap: balance; margin: 0 }
+h1 { font-size: clamp(26px, 4vw, 36px); font-weight: 700 }
+h2 { font-size: 22px; font-weight: 700 }
+h3 { font-size: 16px; font-weight: 700 }
+p { margin: 0; max-width: 68ch }
+.eyebrow { font-family: var(--f-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted) }
+.lede { color: var(--muted); font-size: 16px }
+section { display: grid; gap: 18px }
+code, .mono { font-family: var(--f-mono); font-size: .9em }
+code { background: var(--code-bg); padding: 1px 5px; border-radius: 4px }
+
+/* 흐름 */
+.flow { display: grid; grid-template-columns: 1fr auto 1.25fr auto 1fr; align-items: stretch; gap: 10px }
+.who { border: 1.5px solid var(--c); background: var(--soft); border-radius: 10px; padding: 16px; display: grid; gap: 8px; align-content: start; min-width: 0 }
+.who .name { font-weight: 700; color: var(--c) }
+.who ul { margin: 0; padding-left: 18px; font-size: 14px }
+.who.node { --c: var(--node); --soft: var(--node-soft) }
+.who.wm { --c: var(--wm); --soft: var(--wm-soft); border-width: 2.5px }
+.who.orc { --c: var(--orc); --soft: var(--orc-soft) }
+.arrow { display: grid; place-items: center; color: var(--muted); font-family: var(--f-mono); font-size: 12px; text-align: center; gap: 2px }
+.arrow b { font-size: 22px; color: var(--ink) }
+@media (max-width: 760px) { .flow { grid-template-columns: 1fr } .arrow b { transform: rotate(90deg) } }
+
+.principle { border-left: 3px solid var(--wm); padding: 6px 0 6px 14px; font-size: 16px; max-width: 68ch }
+
+/* 단계 보기 */
+.stage { background: var(--sheet); border: 1px solid var(--line); border-radius: 12px; padding: 18px; display: grid; gap: 16px }
+.steps { display: flex; flex-wrap: wrap; gap: 6px }
+.steps button { font: 500 13px var(--f-body); border: 1px solid var(--line); background: var(--paper); color: var(--ink);
+  border-radius: 999px; padding: 6px 12px; cursor: pointer }
+.steps button[aria-current="step"] { background: var(--wm); border-color: var(--wm); color: var(--sheet) }
+.steps button:focus-visible, .nav button:focus-visible { outline: 2px solid var(--orc); outline-offset: 2px }
+.stephead { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: baseline; justify-content: space-between }
+.stephead h3 { font-size: 18px }
+.pub { font-family: var(--f-mono); font-size: 12px; padding: 3px 10px; border-radius: 999px; background: var(--wm-soft); color: var(--wm) }
+.story { font-size: 15px }
+.cols { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 16px }
+@media (max-width: 760px) { .cols { grid-template-columns: 1fr } }
+.map { display: grid; gap: 8px; min-width: 0 }
+.map svg { width: 100%; height: auto; max-height: 680px; display: block }
+.tray { display: flex; gap: 8px; align-items: center; font-size: 13px; color: var(--muted); min-height: 30px; flex-wrap: wrap }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--muted) }
+.legend i { display: inline-block; width: 14px; height: 10px; border: 1px solid var(--line); vertical-align: -1px; margin-right: 5px; border-radius: 2px }
+.io { display: grid; gap: 10px; min-width: 0 }
+.box { border-radius: 8px; border: 1px solid var(--line); overflow: hidden; min-width: 0 }
+.box .tag { font: 600 12px var(--f-mono); padding: 6px 10px; display: flex; justify-content: space-between; gap: 8px }
+.box.in .tag { background: var(--node-soft); color: var(--node) }
+.box.out .tag { background: var(--wm-soft); color: var(--wm) }
+.box pre { margin: 0; padding: 10px 12px; font: 12.5px/1.6 var(--f-mono); background: var(--code-bg); overflow-x: auto; white-space: pre }
+pre mark { background: var(--orc-soft); color: var(--orc); font-weight: 600; border-radius: 3px; padding: 0 2px }
+.notes { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; font-size: 14px }
+.notes li { display: grid; grid-template-columns: 22px 1fr; gap: 6px }
+.notes .ok { color: var(--good); font-weight: 700 }
+.notes .no { color: var(--bad); font-weight: 700 }
+.nav { display: flex; justify-content: space-between; gap: 8px }
+.nav button { font: 500 14px var(--f-body); border: 1px solid var(--line); background: var(--sheet); color: var(--ink); border-radius: 8px; padding: 8px 14px; cursor: pointer }
+.nav button:disabled { opacity: .4; cursor: default }
+
+/* 규칙 */
+.rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px }
+.rule { background: var(--sheet); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: grid; gap: 6px; align-content: start }
+.rule .k { font-family: var(--f-mono); font-size: 12px; color: var(--wm) }
+.rule p { font-size: 14px; color: var(--muted) }
+
+/* 받는 쪽 */
+.tablewrap { overflow-x: auto; background: var(--sheet); border: 1px solid var(--line); border-radius: 10px }
+table { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 560px }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top }
+tr:last-child td { border-bottom: 0 }
+th { font-size: 12px; color: var(--muted); font-weight: 500; letter-spacing: .04em }
+td.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; white-space: nowrap }
+.code { font: 600 13px var(--f-mono); padding: 2px 8px; border-radius: 4px; white-space: nowrap }
+.c202 { background: var(--good-soft); color: var(--good) }
+.c409 { background: var(--orc-soft); color: var(--orc) }
+.c422 { background: var(--bad-soft); color: var(--bad) }
+
+/* 폴더 */
+.folders { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px }
+@media (max-width: 760px) { .folders { grid-template-columns: 1fr } }
+.folder { border-top: 4px solid var(--c); background: var(--sheet); border-radius: 0 0 10px 10px; border-left: 1px solid var(--line); border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 14px 16px; display: grid; gap: 10px; align-content: start; min-width: 0 }
+.folder.node { --c: var(--node) } .folder.wm { --c: var(--wm) } .folder.orc { --c: var(--orc) }
+.folder h3 { color: var(--c) }
+.folder .path { font: 12.5px/1.75 var(--f-mono); white-space: pre; overflow-x: auto; margin: 0; color: var(--ink) }
+.folder .path span { color: var(--muted) }
+
+/* 합의 */
+.agree { display: grid; gap: 0; background: var(--sheet); border: 1px solid var(--line); border-radius: 10px; overflow: hidden }
+.agree div { display: grid; grid-template-columns: 2.2em minmax(0, 1fr) minmax(0, 1.2fr); gap: 12px; padding: 11px 16px; border-bottom: 1px solid var(--line); font-size: 14px }
+.agree div:last-child { border-bottom: 0 }
+.agree .n { font-family: var(--f-mono); color: var(--muted) }
+.agree .q { color: var(--muted) }
+@media (max-width: 600px) { .agree div { grid-template-columns: 2em 1fr } .agree .q { grid-column: 2 } }
+footer { font-size: 13px; color: var(--muted) }
+@media (prefers-reduced-motion: no-preference) { .room rect, .tok { transition: fill .25s, opacity .25s } }
+</style>
+
+<div class="wrap">
+
+<header style="display:grid;gap:12px">
+  <div class="eyebrow">EYEAR · World Model · 2026-11-14</div>
+  <h1>방마다 따로 오는 관측을, 집 한 장으로</h1>
+  <p class="lede">World Model은 방 Node들이 1초마다 보내는 메시지를 모아 집 전체 상태(WorldSnapshot 2.0)를 만들고, 그걸 중앙 판단부(Orchestrator)로 넘긴다. 판단은 하지 않는다. 있는 그대로, 모르면 모른다고 정리한다.</p>
+</header>
+
+<section aria-labelledby="h-flow">
+  <h2 id="h-flow">누가 누구에게 무엇을</h2>
+  <div class="flow">
+    <div class="who node">
+      <div class="eyebrow">받는 것 · 반석</div>
+      <div class="name">Node (방마다 1대)</div>
+      <ul><li>카메라·레이더·마이크</li><li>1초마다 자기 방 상태</li><li>형식: Node schema 0.1</li></ul>
+    </div>
+    <div class="arrow"><b>→</b>MQTT<br>방 1개씩</div>
+    <div class="who wm">
+      <div class="eyebrow">내가 하는 것 · 이효창</div>
+      <div class="name">World Model 엔진</div>
+      <ul><li>방 메시지 + 기기 상태 + 앱 설정 합치기</li><li>track 번호 → 집 공통 사람 ID</li><li>오래된 관측은 stale/UNKNOWN으로</li><li>보낼 때마다 revision +1</li></ul>
+    </div>
+    <div class="arrow"><b>→</b>HTTP POST<br>집 전체 1장</div>
+    <div class="who orc">
+      <div class="eyebrow">보내는 것 · 정빈</div>
+      <div class="name">Orchestrator (중앙)</div>
+      <ul><li>WorldSnapshot 2.0 받기</li><li>청소·에어컨·질문 판단</li><li>202 / 409 / 422 응답</li></ul>
+    </div>
+  </div>
+  <p class="principle">한 줄 요약: <b>Node는 "방 하나에서 지금 본 것"</b>을 말하고, <b>World Model은 "집 전체에서 지금 알고 있는 것과 모르는 것"</b>을 말한다.</p>
+</section>
+
+<section aria-labelledby="h-steps">
+  <div style="display:grid;gap:6px">
+    <h2 id="h-steps">저녁 장면으로 한 단계씩</h2>
+    <p class="lede">A가 방1에서 눕고, 불을 끄고, 방을 나가는 동안 Node가 보낸 것과 World Model이 정리한 것을 나란히 본다.</p>
+  </div>
+  <div class="stage">
+    <div class="steps" id="steps" role="tablist" aria-label="장면"></div>
+    <div class="stephead"><h3 id="st-title"></h3><span class="pub" id="st-pub"></span></div>
+    <p class="story" id="st-story"></p>
+    <div class="cols">
+      <div class="map">
+        <svg id="plan" viewBox="70 170 1390 1660" role="img" aria-label="우리집 평면도 (시뮬레이터와 같은 구조)">
+          <defs>
+            <pattern id="hatch" width="22" height="22" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+              <rect width="22" height="22" fill="var(--unk-fill)"/><line x1="0" y1="0" x2="0" y2="22" stroke="var(--hatch)" stroke-width="7"/>
+            </pattern>
+          </defs>
+          <!-- 바닥: World Model 밖의 공간 (화1·화2·방3·베란다) -->
+          <g fill="var(--paper)">
+            <rect x="1010" y="685" width="420" height="150"/><rect x="1010" y="835" width="420" height="160"/>
+            <rect x="810" y="995" width="620" height="605"/><rect x="100" y="1600" width="1330" height="200"/>
+          </g>
+          <g font-family="var(--f-body)" font-size="32" font-weight="700" fill="var(--muted)" opacity=".7">
+            <text x="1030" y="735">화1</text><text x="1030" y="885">화2</text>
+            <text x="835" y="1045">방3</text><text x="125" y="1650">베란다</text>
+          </g>
+          <!-- World Model이 다루는 방 5개 (상태에 따라 칠함) -->
+          <g id="rooms"></g>
+          <!-- 가구 -->
+          <g fill="none" stroke="var(--line)" stroke-width="3">
+            <rect x="1130" y="222" width="180" height="86" rx="10"/>
+            <rect x="1100" y="352" width="324" height="132" rx="8"/><rect x="1366" y="366" width="46" height="104" rx="8"/>
+            <rect x="108" y="1030" width="105" height="430" rx="14"/>
+            <rect x="752" y="1045" width="40" height="385" rx="4"/>
+            <circle cx="770" cy="1530" r="42"/>
+          </g>
+          <g font-family="var(--f-body)" font-size="22" fill="var(--muted)">
+            <text x="1220" y="272" text-anchor="middle">세탁기</text>
+            <text x="1118" y="472">침대</text>
+            <text x="160" y="1250" text-anchor="middle">소파</text>
+            <text x="738" y="1250" text-anchor="end">TV</text>
+            <text x="770" y="1538" text-anchor="middle" font-size="19">에어컨</text>
+          </g>
+          <!-- 벽·문 -->
+          <path fill="none" stroke="var(--ink)" stroke-width="10" stroke-linecap="square" d="
+            M100 195 H1430 M1430 195 V380 M1430 470 V1800 M1430 1800 H100 M100 1800 V875 M100 815 V195
+            M720 195 V690 M100 690 H535 M600 690 H720
+            M1010 195 V240 M1010 295 V545 M1010 610 V745 M1010 800 V995
+            M1010 345 H1430 M1010 685 H1430 M1010 835 H1430
+            M810 995 H950 M1005 995 H1280 M1340 995 H1430
+            M810 995 V1600
+            M100 1600 H600 M665 1600 H1430"/>
+          <g fill="none" stroke="var(--muted)" stroke-width="2.5">
+            <path d="M1010 240 L1065 240 A55 55 0 0 1 1010 295"/><path d="M1010 545 L1075 545 A65 65 0 0 1 1010 610"/>
+            <path d="M1010 745 L1065 745 A55 55 0 0 1 1010 800"/><path d="M535 690 L535 755 A65 65 0 0 0 600 690"/>
+            <path d="M100 815 L160 815 A60 60 0 0 1 100 875"/><path d="M950 995 L950 1050 A55 55 0 0 0 1005 995"/>
+            <path d="M1280 995 L1280 1055 A60 60 0 0 0 1340 995"/><path d="M600 1600 L600 1665 A65 65 0 0 0 665 1600"/>
+          </g>
+          <line x1="1430" y1="380" x2="1430" y2="470" stroke="var(--node)" stroke-width="10"/>
+          <g id="labels"></g><g id="toks"></g>
+        </svg>
+        <div class="tray" id="tray"></div>
+        <div class="legend">
+          <span><i style="background:var(--occ-fill);border-color:var(--occ)"></i>사람 있음</span>
+          <span><i style="background:var(--empty-fill)"></i>비어 있음</span>
+          <span><i style="background:url(#);background:var(--unk-fill);border-style:dashed"></i>모름 (빗금)</span>
+          <span>● 지금 보임 &nbsp;◌ 추정으로 유지</span><span><i style="background:var(--node);border-color:var(--node)"></i>Node 위치</span><span>화1·화2·방3·베란다는 Node 없음 (World Model 밖)</span>
+        </div>
+      </div>
+      <div class="io">
+        <div class="box in"><div class="tag"><span>Node가 보낸 것</span><span id="in-who"></span></div><pre id="in"></pre></div>
+        <div class="box out"><div class="tag"><span>World Model이 정리한 것</span><span id="out-rev"></span></div><pre id="out"></pre></div>
+      </div>
+    </div>
+    <ul class="notes" id="notes"></ul>
+    <div class="nav"><button id="prev" type="button">← 이전</button><button id="next" type="button">다음 →</button></div>
+  </div>
+</section>
+
+<section aria-labelledby="h-rules">
+  <h2 id="h-rules">엔진이 지키는 규칙</h2>
+  <div class="rules">
+    <div class="rule"><div class="k">모름 = null / UNKNOWN</div><h3>모르는 값은 채우지 않는다</h3><p>측정 안 한 온도를 0으로, 안 보이는 자세를 LYING으로, 모르는 사람을 다른 사람 ID로 채우지 않는다.</p></div>
+    <div class="rule"><div class="k">occupancy ≠ persons</div><h3>사람 목록이 비어도 빈방이 아니다</h3><p>방에 사람이 있는지는 Node의 occupancy만 따른다. 카메라가 놓쳐도 레이더가 있다고 하면 있다.</p></div>
+    <div class="rule"><div class="k">track 1 ≠ person_a</div><h3>track 번호는 그 Node 안에서만 의미</h3><p>방1의 track 1과 거실의 track 1은 다른 사람. 얼굴로 확인된 구성원만 <code>person_a</code>처럼 집 공통 ID를 받는다.</p></div>
+    <div class="rule"><div class="k">TTL 3초</div><h3>3초 소식 없으면 그 방은 모름</h3><p>새 메시지를 기다리지 않고 엔진이 스스로 만료를 알아채 발행한다. 마지막 관측 시각은 남겨 둔다.</p></div>
+    <div class="rule"><div class="k">event_id · seq</div><h3>중복·역순 메시지는 버린다</h3><p>같은 event_id는 한 번만. seq가 줄면 옛 메시지로 버리되, 0으로 돌아오면 Node 재시작으로 보고 track 연결을 초기화한다.</p></div>
+    <div class="rule"><div class="k">confirmed</div><h3>같은 활동이 3초 이어져야 확정</h3><p>Node는 순간값만 준다. "얼마나 이어졌나(stable_for_s)"와 "확정됐나"는 World Model이 이력을 보고 만든다.</p></div>
+    <div class="rule"><div class="k">revision +1</div><h3>보낼 때마다 번호를 올린다</h3><p>의미 있는 변화는 즉시, 값만 바뀌면 최대 1초에 1번, 아무 변화 없어도 30초에 1번.</p></div>
+    <div class="rule"><div class="k">판단 없음</div><h3>"청소 금지" 같은 결정은 안 한다</h3><p>우선순위·허용 여부는 중앙의 일. World Model 출력에는 그런 칸 자체가 없다.</p></div>
+  </div>
+</section>
+
+<section aria-labelledby="h-rx">
+  <h2 id="h-rx">받는 쪽(정빈)은 이렇게 응답한다</h2>
+  <p class="lede">같은 번호로 다른 내용을 보내면 안 되기 때문에, World Model은 보낼 때마다 revision을 올린다. 아래는 받는 쪽 참조 구현(<code>receiver.py</code>)에 들어간 규칙이다.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>보낸 순서</th><th>상황</th><th>응답</th><th>의미</th></tr></thead>
+    <tbody>
+      <tr><td class="num">rev 101 → 102</td><td>새 번호</td><td><span class="code c202">202</span></td><td>채택하고 판단</td></tr>
+      <tr><td class="num">rev 102 다시</td><td>같은 번호, 같은 내용 (재전송)</td><td><span class="code c202">202</span></td><td>받았다고만. 다시 판단하지 않음</td></tr>
+      <tr><td class="num">rev 102 다시</td><td>같은 번호, 내용이 다름</td><td><span class="code c409">409</span></td><td>충돌. 거절</td></tr>
+      <tr><td class="num">rev 101</td><td>이미 지난 번호</td><td><span class="code c409">409</span></td><td>늦게 온 옛 상태. 거절</td></tr>
+      <tr><td class="num">새 세션 ID</td><td>reset 등록 없이 보냄</td><td><span class="code c409">409</span></td><td>등록(reset) 먼저 해야 받음</td></tr>
+      <tr><td class="num">—</td><td>형식 오류, 없는 방 참조, live 시각이 −5~120초 밖</td><td><span class="code c422">422</span></td><td>잘못된 데이터</td></tr>
+    </tbody>
+  </table></div>
+  <p>중앙이 기기를 조작하기 전에는 <code>can_issue()</code>로 그 기기가 광고한 조작인지 확인한다. 예: 로봇청소기에 없는 <code>turbo</code> 모드, 세탁기의 전원 조작, 같은 방에 없는 사람에게 에어컨 바람 보내기는 모두 거절된다.</p>
+</section>
+
+<section aria-labelledby="h-folders">
+  <h2 id="h-folders">저장소에서 어디에 있나</h2>
+  <p class="lede">파일은 원래 자리에 그대로 두고, <code>eyear-worldmodel/docs/</code>에서 World Model 입장으로 세 갈래를 설명한다. 아래 각 칸 위쪽은 설명 문서, 아래쪽은 실제 파일 위치.</p>
+  <div class="folders">
+    <div class="folder node"><h3>① 반석에게서 받는 것</h3>
+<pre class="path">docs/1_from_node/README.md
+  <span>메시지 칸 설명</span>
+
+<span>실제 파일</span>
+worldmodel/node_input.py
+EYEAR_레이더_데이터_명세서.md</pre></div>
+    <div class="folder wm"><h3>② 내가 하는 것</h3>
+<pre class="path">docs/2_worldmodel/README.md
+  <span>엔진 규칙 8가지</span>
+
+<span>실제 파일</span>
+worldmodel/engine.py  config.py
+config/home_demo.json
+sim/     <span>집 시뮬레이터</span>
+tests/   <span>95개</span></pre></div>
+    <div class="folder orc"><h3>③ 정빈에게 보낼 것</h3>
+<pre class="path">docs/3_to_orchestrator/README.md
+docs/3_to_orchestrator/
+  합의_요청_2026-11-14.md
+
+<span>실제 파일</span>
+worldmodel/contract/
+  json/ examples/ <span>별첨</span>
+  models.py semantic.py
+  receiver.py</pre></div>
+  </div>
+</section>
+
+<section aria-labelledby="h-agree">
+  <h2 id="h-agree">정빈·반석과 합의할 것</h2>
+  <p class="lede">문서에 정해지지 않아 임시로 정한 것들. 자세한 내용은 <code>docs/3_to_orchestrator/합의_요청_2026-11-14.md</code>.</p>
+  <div class="agree">
+    <div><span class="n">1</span><span>어두워져 놓친 사람을 방이 계속 차 있으면 그 방에 둔다 (자세는 모름, 근거는 추정)</span><span class="q">중앙이 이 사람을 "쉬는 중"으로 볼지</span></div>
+    <div><span class="n">2</span><span>3초 무소식인 방은 마지막 값 대신 UNKNOWN</span><span class="q">마지막 값 + stale 표시를 원하는지</span></div>
+    <div><span class="n">3</span><span>TTL: Node 3초 · 기기 10초 · 환경값 120초 · 활동 확정 3초</span><span class="q">양쪽 공유 값으로 확정</span></div>
+    <div><span class="n">4</span><span><code>MEMBER_A → person_a</code> 매핑은 설정 파일, 프로필은 앱의 identity로 연결</span><span class="q">앱 쪽 identity 이름</span></div>
+    <div><span class="n">5</span><span>풍향 조작은 대상의 좌표가 있어야 허용 (설치 보정 전엔 좌표 null)</span><span class="q">시연 때 좌표 보정 여부</span></div>
+    <div><span class="n">6</span><span>사실상 1초마다 1장 발행</span><span class="q">중앙 부하 괜찮은지</span></div>
+    <div><span class="n">7</span><span>문서에 별첨이라고 적힌 Schema·예제 파일을 직접 만듦</span><span class="q">공식 별첨으로 써도 되는지</span></div>
+    <div><span class="n">8</span><span>Node 재시작을 <code>seq = 0</code>으로 판단 (반석)</span><span class="q">boot_id 추가 계획</span></div>
+  </div>
+</section>
+
+<footer>근거: World_Model_to_Orchestrator_Contract_v2_Draft (2026-11-13), eyear-node faf518d. 장면의 값은 테스트에서 실제로 나오는 출력을 줄여 옮긴 것.</footer>
+</div>
+
+<script>
+// sim/index.html 평면도와 같은 좌표. lx/ly = 방 이름 위치, nx/ny = Node 위치
+const ROOMS = [
+  { id: "room2",   name: "방2",   shape: "rect", x: 100,  y: 195, w: 620, h: 495, lx: 125,  ly: 245, nx: 690,  ny: 225, node: true },
+  { id: "kitchen", name: "부엌",  shape: "poly", pts: "720,195 1010,195 1010,995 810,995 810,690 720,690", lx: 740, ly: 250, node: false },
+  { id: "laundry", name: "세탁실", shape: "rect", x: 1010, y: 195, w: 420, h: 150, lx: 1024, ly: 236, nx: 1400, ny: 225, node: true, small: true },
+  { id: "room1",   name: "방1",   shape: "rect", x: 1010, y: 345, w: 420, h: 340, lx: 1024, ly: 540, nx: 1400, ny: 625, node: true },
+  { id: "living",  name: "거실",  shape: "rect", x: 100,  y: 690, w: 710, h: 910, lx: 125,  ly: 745, nx: 780,  ny: 720, node: true },
+];
+// 사람 위치 (평면도 좌표)
+const SPOT = { bed: [1255, 420], livingMid: [470, 1180] };
+const LABEL = { OCCUPIED: "사람 있음", EMPTY: "비어 있음", UNKNOWN: "모름" };
+const U = "UNKNOWN";
+const base = { room1: U, living: U, room2: U, kitchen: U, laundry: U };
+
+const STEPS = [
+  { short: "시작", title: "아직 아무 메시지도 안 왔다",
+    story: "엔진을 켠 직후. 어떤 방도 관측하지 않았으니 전부 '모름'이다. 부엌은 Node가 없어서 앞으로도 계속 모름.",
+    rooms: { ...base }, toks: [], tray: [],
+    inWho: "", in: "(없음)",
+    rev: "rev 1", pub: "처음 발행",
+    out: `rooms[room1].occupancy:
+  state: <mark>"UNKNOWN"</mark>
+  evidence.freshness: <mark>"unavailable"</mark>
+nodes[node_room1].availability: <mark>"unknown"</mark>
+people: []
+devices: []`,
+    notes: [["ok", "모르는 방을 EMPTY로 시작하지 않는다. EMPTY라고 하면 중앙이 청소를 보낼 수 있다."],
+            ["ok", "아직 보고하지 않은 기기를 정상 상태로 만들어 넣지 않는다 (devices: [])."]] },
+
+  { short: "A가 눕다", title: "방1 Node: 사람 1명, 누워서 쉬는 중",
+    story: "방1 Node가 첫 메시지를 보냈다. 거실 Node는 밝은데 아무도 없다고 보냈다.",
+    rooms: { ...base, room1: "OCCUPIED", living: "EMPTY" },
+    toks: [{ who: "A", at: "bed", seen: true, sub: "LYING" }], tray: [],
+    inWho: "node_room1 · seq 1", in: `occupancy: OCCUPIED 0.95
+persons:
+  - track_id: 1
+    identity: MEMBER_A   (FACE)
+    posture: LYING
+    activity: RESTING
+    position: {x: 2.4, y: 2.67}
+light: BRIGHT`,
+    rev: "rev 2", pub: "의미 변화 → 즉시",
+    out: `rooms[room1].occupancy: <mark>OCCUPIED</mark> 0.95
+people:
+  - person_id: <mark>"person_a"</mark>   ← track 1 아님
+    profile_id: "profile_a"
+    room_id: "room1"
+    posture: "LYING"
+    activity: {label: <mark>"resting"</mark>,
+               confirmed: <mark>false</mark>, stable_for_s: 0}
+    track_refs: [{node_room1, track 1}]`,
+    notes: [["ok", "Node의 track 1을 집 공통 ID person_a로 바꾼다. 얼굴로 MEMBER_A가 확인됐기 때문."],
+            ["ok", "RESTING → resting. 하지만 방금 봤으므로 아직 확정(confirmed)은 아니다."]] },
+
+  { short: "4초 뒤", title: "같은 상태가 4초 이어졌다",
+    story: "Node는 1초마다 똑같이 '누워서 쉬는 중'을 보낸다. Node는 '얼마나 오래'를 모르기 때문에 World Model이 이력을 세서 붙인다.",
+    rooms: { ...base, room1: "OCCUPIED", living: "EMPTY" },
+    toks: [{ who: "A", at: "bed", seen: true, sub: "LYING" }], tray: [],
+    inWho: "node_room1 · seq 5", in: `(seq 2~5 모두 같은 내용)
+occupancy: OCCUPIED 0.95
+persons: [track 1, MEMBER_A,
+          LYING, RESTING]`,
+    rev: "rev 6", pub: "의미 변화(확정) → 즉시",
+    out: `rooms[room1].occupancy.stable_for_s: <mark>4</mark>
+people[person_a].activity:
+  label: "resting"
+  confirmed: <mark>true</mark>     ← 3초 넘게 이어짐
+  stable_for_s: <mark>4</mark>`,
+    notes: [["ok", "같은 활동이 3초(합의 전 제안값) 이어지면 confirmed=true."],
+            ["ok", "rev 3~5는 stable_for_s만 바뀌어 1초에 1번씩 나갔다. 이번엔 '확정'이라는 의미 변화라 즉시."]] },
+
+  { short: "거실 손님", title: "거실에도 track 1이 나타났다",
+    story: "거실 Node가 모르는 사람을 track 1로 잡았다. 방1의 A도 track 1이다. 번호가 같아도 다른 사람이다.",
+    rooms: { ...base, room1: "OCCUPIED", living: "OCCUPIED" },
+    toks: [{ who: "A", at: "bed", seen: true, sub: "LYING" },
+           { who: "?", at: "livingMid", seen: true, sub: "anon" }], tray: [],
+    inWho: "node_living · seq 7", in: `occupancy: OCCUPIED 0.9
+persons:
+  - track_id: 1
+    identity: UNKNOWN   (UNKNOWN)
+    posture: STANDING`,
+    rev: "rev 7", pub: "의미 변화 → 즉시",
+    out: `people:
+  - person_id: "person_a"
+    track_refs: [{node_room1, track 1}]
+  - person_id: <mark>"anon_node_living_e0_t1"</mark>
+    identity: "UNKNOWN"
+    profile_id: <mark>null</mark>
+    identity_confidence: <mark>null</mark>   ← 0 아님`,
+    notes: [["ok", "모르는 사람은 'Node·재시작회차·track'으로 임시 ID. person_a와 절대 합치지 않는다."],
+            ["no", "모르는 사람에게 프로필을 붙이거나 신뢰도 0을 그대로 싣지 않는다."]] },
+
+  { short: "불 끔", title: "불을 끄자 카메라가 A를 놓쳤다",
+    story: "방이 어두워져 카메라 추적이 끊겼다. 하지만 레이더는 여전히 누군가 있다고 한다. 손님은 거실을 나갔다.",
+    rooms: { ...base, room1: "OCCUPIED", living: "EMPTY" },
+    toks: [{ who: "A", at: "bed", seen: false, sub: "자세 모름" }], tray: [],
+    inWho: "node_room1 · seq 30", in: `occupancy: OCCUPIED 0.9   ← 레이더
+persons: <mark>[]</mark>                 ← 카메라 놓침
+light: DARK`,
+    rev: "rev 31", pub: "의미 변화 → 즉시",
+    out: `rooms[room1].occupancy: <mark>OCCUPIED</mark>   ← 그대로
+people[person_a]:
+  room_id: "room1"            ← 유지
+  posture: <mark>"UNKNOWN"</mark>  posture_confidence: null
+  position: <mark>null</mark>
+  track_refs: []
+  activity: {label: "resting", confirmed: <mark>false</mark>}
+  evidence: {source: <mark>"world_inference"</mark>,
+             freshness: <mark>"stale"</mark>,
+             observed_at: 마지막으로 실제 본 시각}`,
+    notes: [["no", "persons가 비었다고 방을 EMPTY로 바꾸지 않는다."],
+            ["no", "보이지 않는데 LYING을 계속 붙여 두지 않는다."],
+            ["ok", "방이 계속 차 있으니 A를 그 방에 두되, '추정'이고 '오래된 근거'라고 표시한다 (합의 필요 1번)."],
+            ["ok", "익명 손님은 끊기면 바로 뺀다. 이어 붙일 근거가 없다."]] },
+
+  { short: "방이 빔", title: "방1이 비었다",
+    story: "레이더도 사람이 없다고 한다. A는 방을 나갔지만, 어디로 갔는지는 아직 아무 Node도 보지 못했다.",
+    rooms: { ...base, room1: "EMPTY", living: "EMPTY" },
+    toks: [], tray: [{ who: "A", sub: "위치 모름" }],
+    inWho: "node_room1 · seq 45", in: `occupancy: EMPTY 0.5
+persons: []`,
+    rev: "rev 46", pub: "의미 변화 → 즉시",
+    out: `rooms[room1].occupancy: <mark>EMPTY</mark> 0.5
+people[person_a]:
+  room_id: <mark>null</mark>       ← 다른 방에 넣지 않음
+  evidence.freshness: "stale"`,
+    notes: [["ok", "등록 구성원은 바로 지우지 않고 '위치 모름'으로 30분 기억한다."],
+            ["no", "A가 아마 거실로 갔을 거라며 다른 방에 넣지 않는다."]] },
+
+  { short: "Node 끊김", title: "방1 Node가 3초 넘게 조용하다",
+    story: "Wi-Fi가 끊겼거나 Node가 멈췄다. 새 메시지가 없으므로 World Model이 시계를 보고 스스로 만료를 알아챈다.",
+    rooms: { ...base, room1: U, living: "EMPTY" }, offline: ["room1"],
+    toks: [], tray: [{ who: "A", sub: "위치 모름" }],
+    inWho: "node_room1", in: `(3초 동안 아무것도 안 옴)`,
+    rev: "rev 47", pub: "만료도 의미 변화 → 즉시",
+    out: `nodes[node_room1].availability: <mark>"stale"</mark>
+rooms[room1].occupancy:
+  state: <mark>"UNKNOWN"</mark>
+  evidence: {freshness: <mark>"stale"</mark>,
+             observed_at: 마지막 메시지 시각}`,
+    notes: [["no", "마지막 값 EMPTY를 계속 믿지 않는다. 오래된 EMPTY를 보고 청소를 보내면 안 되기 때문 (합의 필요 2번)."],
+            ["ok", "마지막으로 언제 봤는지는 남긴다. 중앙이 얼마나 오래됐는지 직접 볼 수 있다."]] },
+];
+
+const $ = (id) => document.getElementById(id);
+const NS = "http://www.w3.org/2000/svg";
+function el(tag, attrs, text) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (text != null) e.textContent = text;
+  return e;
+}
+const fillFor = (s) => s === "OCCUPIED" ? "var(--occ-fill)" : s === "EMPTY" ? "var(--empty-fill)" : "url(#hatch)";
+
+let cur = 0;
+function render(i) {
+  cur = i;
+  const s = STEPS[i];
+  [...$("steps").children].forEach((b, j) => b.setAttribute("aria-current", j === i ? "step" : "false"));
+  $("st-title").textContent = s.title;
+  $("st-pub").textContent = s.rev + " · " + s.pub;
+  $("st-story").textContent = s.story;
+  $("in-who").textContent = s.inWho;
+  $("in").textContent = s.in;
+  $("out-rev").textContent = s.rev;
+  $("out").innerHTML = s.out;
+
+  const g = $("rooms"), lab = $("labels"); g.replaceChildren(); lab.replaceChildren();
+  for (const r of ROOMS) {
+    const st = s.rooms[r.id];
+    const a = { fill: fillFor(st), class: "room" };
+    const shape = r.shape === "rect"
+      ? el("rect", { ...a, x: r.x, y: r.y, width: r.w, height: r.h })
+      : el("polygon", { ...a, points: r.pts });
+    const grp = el("g", { class: "room" }); grp.append(shape); g.append(grp);
+    if (st === "OCCUPIED") {
+      const edge = shape.cloneNode();
+      edge.setAttribute("fill", "none"); edge.setAttribute("stroke", "var(--occ)"); edge.setAttribute("stroke-width", 6);
+      edge.setAttribute("stroke-dasharray", "14 8");
+      lab.append(edge);
+    }
+    lab.append(el("text", { x: r.lx, y: r.ly, fill: "var(--ink)", "font-size": r.small ? 28 : 40, "font-weight": 700, "font-family": "var(--f-body)" }, r.name));
+    lab.append(el("text", { x: r.lx, y: r.ly + (r.small ? 34 : 44), fill: st === "OCCUPIED" ? "var(--occ)" : "var(--muted)", "font-size": r.small ? 22 : 28, "font-weight": 500, "font-family": "var(--f-body)" },
+      LABEL[st] + (r.node ? "" : " · Node 없음")));
+    if (r.node) {
+      const off = s.offline && s.offline.includes(r.id);
+      lab.append(el("rect", { x: r.nx - 12, y: r.ny - 4, width: 24, height: 44, rx: 5,
+        fill: off ? "var(--sheet)" : "var(--node)", stroke: "var(--node)", "stroke-width": 3, "stroke-dasharray": off ? "5 4" : "none" }));
+      lab.append(el("text", { x: r.nx - 22, y: r.ny + 28, "text-anchor": "end", "font-size": 20, "font-family": "var(--f-mono)",
+        fill: off ? "var(--bad)" : "var(--node)" }, off ? "Node ✕" : "Node"));
+    }
+  }
+  const t = $("toks"); t.replaceChildren();
+  for (const k of s.toks) {
+    const [cx, cy] = SPOT[k.at];
+    const tok = el("g", { class: "tok" });
+    tok.append(el("circle", { cx, cy, r: 36, fill: k.seen ? "var(--wm)" : "var(--sheet)", stroke: "var(--wm)",
+      "stroke-width": 6, "stroke-dasharray": k.seen ? "none" : "10 7" }));
+    tok.append(el("text", { x: cx, y: cy + 11, "text-anchor": "middle", "font-size": 32, "font-weight": 700,
+      fill: k.seen ? "var(--sheet)" : "var(--wm)", "font-family": "var(--f-body)" }, k.who));
+    tok.append(el("rect", { x: cx - 90, y: cy + 46, width: 180, height: 36, rx: 18, fill: "var(--sheet)", opacity: .9 }));
+    tok.append(el("text", { x: cx, y: cy + 72, "text-anchor": "middle", "font-size": 24, fill: "var(--ink)", "font-family": "var(--f-mono)" }, k.sub));
+    t.append(tok);
+  }
+  const tray = $("tray"); tray.replaceChildren();
+  if (s.tray.length) {
+    tray.append(Object.assign(document.createElement("span"), { textContent: "집 안 어딘가 (room_id = null):" }));
+    for (const k of s.tray) {
+      const b = document.createElement("span");
+      b.className = "mono";
+      b.style.cssText = "border:2px dashed var(--wm);color:var(--wm);border-radius:999px;padding:1px 10px;font-weight:600";
+      b.textContent = k.who + " · " + k.sub;
+      tray.append(b);
+    }
+  }
+  const n = $("notes"); n.replaceChildren();
+  for (const [kind, txt] of s.notes) {
+    const li = document.createElement("li");
+    li.innerHTML = `<span class="${kind}">${kind === "ok" ? "✓" : "✕"}</span><span></span>`;
+    li.lastChild.textContent = (kind === "no" ? "하지 않음: " : "") + txt;
+    n.append(li);
+  }
+  $("prev").disabled = i === 0;
+  $("next").disabled = i === STEPS.length - 1;
+}
+
+STEPS.forEach((s, i) => {
+  const b = document.createElement("button");
+  b.type = "button"; b.role = "tab";
+  b.textContent = (i + 1) + ". " + s.short;
+  b.addEventListener("click", () => render(i));
+  $("steps").append(b);
+});
+$("prev").addEventListener("click", () => cur > 0 && render(cur - 1));
+$("next").addEventListener("click", () => cur < STEPS.length - 1 && render(cur + 1));
+document.addEventListener("keydown", (e) => {
+  if (e.target.closest && e.target.closest("input,textarea")) return;
+  if (e.key === "ArrowRight" && cur < STEPS.length - 1) render(cur + 1);
+  if (e.key === "ArrowLeft" && cur > 0) render(cur - 1);
+});
+render(0);
+</script>

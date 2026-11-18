@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EYEAR 3D 데모</title>
+<link rel="stylesheet" href="css/demo3d.css">
+</head>
+<body>
+<canvas id="scene"></canvas>
+<div id="overlay"></div>
+
+<div class="hud top-left">
+  <div class="brand">EYEAR <span>World Model 시연</span></div>
+  <div class="meta"><span class="scn">여름 저녁 시나리오</span><span id="clock">21:00:00</span><span id="speed" class="spd"></span></div>
+  <button id="covBtn" class="covbtn" type="button">센서 범위 설정 <kbd>S</kbd></button>
+  <div id="covPanel" class="covpanel">
+    <div class="covhead"><b>센서 범위</b>
+      <select id="covRoom" aria-label="방 선택"><option value="room1">방1</option><option value="living">거실</option><option value="room2">방2</option><option value="laundry">세탁실</option></select>
+    </div>
+    <div id="covRows"></div>
+    <div id="covState" class="covstate"></div>
+    <p id="covNote" class="covnote"></p>
+    <button id="covReset" class="covreset" type="button">기본값으로</button>
+  </div>
+</div>
+
+<div class="hud top-right">
+  <div class="legend">
+    <div class="lt">사람 표시 = World Model이 아는 상태</div>
+    <div><i class="lg seen"></i>보임·감지 <small>Node가 지금 파악</small></div>
+    <div><i class="lg held"></i>레이더로만 확인 <small>HELD</small></div>
+    <div><i class="lg transit"></i>이동 중 <small>IN_TRANSIT</small></div>
+    <div><i class="lg last"></i>위치 모름 <small>LAST_KNOWN</small></div>
+    <div><i class="lg occ"></i>바닥 파란빛 = 사람 있음</div>
+    <div class="lt lt2">센서 범위 <small>V 켜기/끄기</small></div>
+    <div><i class="lg sw cam"></i>카메라 <small>얼굴·자세</small></div>
+    <div><i class="lg sw pos"></i>위치 레이더 <small>LD2450</small></div>
+    <div><i class="lg sw pres"></i>재실 레이더 <small>LD2410C</small></div>
+  </div>
+  <ul id="people" class="people"></ul>
+</div>
+
+<div class="hud bottom">
+  <div id="caption" class="caption">
+    <div class="capline"><span id="stepId" class="sid"></span><h1 id="head"></h1><span id="cue" class="cue"></span></div>
+    <p id="note"></p>
+    <div class="rows">
+      <div class="row" id="senRow"><span class="k sen" id="senKey">센서</span><span id="sen" class="v sens"></span></div>
+      <div class="row" id="wmRow"><span class="k wm">World Model</span><span id="wm" class="v">—</span></div>
+      <div class="row" id="actRow"><span class="k act">중앙 판단 → 가전</span><span id="act" class="v">—</span></div>
+    </div>
+  </div>
+  <div class="progress"><div id="bar" class="bar"></div><div id="ticks"></div></div>
+</div>
+
+<div id="hint" class="hint"></div>
+
+<div id="intro" class="intro">
+  <div class="card">
+    <div class="eyebrow">EYEAR · 중간 발표</div>
+    <h2>방마다 본 것을, 하나의 집 상태로</h2>
+    <p>가짜 Node 4개 → World Model → 임시 중앙 판단 → 가상 가전.<br>화면의 사람은 시나리오 원본이 아니라 <b>World Model 스냅샷</b>으로 그립니다.</p>
+    <div class="go">Space 또는 클릭으로 시작</div>
+    <div class="keys">Space · → · 클릭 = 다음 단계 재생 · ← 이전 단계 · P 일시정지<br>V 센서 범위 표시 · S 범위 설정 · N 거실 Node 끊기 · C 자동 카메라 · H 화면 정리 · F 전체 화면 · R 처음으로</div>
+  </div>
+</div>
+
+<div id="endcard" class="intro end">
+  <div class="card">
+    <div class="eyebrow">World Model이 한 일</div>
+    <ul>
+      <li><b>사람 단위로 이어 붙임</b> 방1의 A와 거실의 A를 같은 사람으로</li>
+      <li><b>모르는 건 모른다고</b> 어두우면 ‘자세 모름’, Node가 끊기면 ‘빈 방’이 아니라 ‘모름’</li>
+      <li><b>성급하게 판단하지 않음</b> 위치를 놓쳐도 재실 레이더가 있으면 HELD → 정말 비었을 때만 청소</li>
+      <li><b>한 번만 묻기</b> 휴식 회차(rest_episode)마다 질문은 한 번</li>
+    </ul>
+    <div class="go">Space로 다시 보기 · N으로 장애 시연</div>
+  </div>
+</div>
+
+<script src="vendor/three.min.js"></script>
+<script src="vendor/OrbitControls.js"></script>
+<script src="js/home.js"></script>
+<script src="js/core.js"></script>
+<script src="js/words.js"></script>
+<script src="js/scenario.js"></script>
+<script src="js/devices.js"></script>
+<script src="js/worldmodel.js"></script>
+<script src="js/mock_orchestrator.js"></script>
+<script src="js/coverage.js"></script>
+<script src="js/view3d.js"></script>
+<script src="js/demo3d.js"></script>
+</body>
+</html>

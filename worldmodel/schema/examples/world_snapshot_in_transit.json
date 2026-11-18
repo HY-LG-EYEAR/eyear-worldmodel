@@ -1,0 +1,448 @@
+{
+  "schema_version": "0.1",
+  "snapshot_id": "00000000-0000-4000-8000-000000000051",
+  "home_id": "home",
+  "revision": 51,
+  "timestamp": "2026-10-30T22:02:08+09:00",
+  "changes": [
+    {
+      "type": "OCCUPANCY_CHANGED",
+      "room_id": "room1",
+      "person_id": null,
+      "device_id": null,
+      "before": "OCCUPIED",
+      "after": "EMPTY"
+    },
+    {
+      "type": "PERSON_LEFT",
+      "room_id": "room1",
+      "person_id": "MEMBER_A",
+      "device_id": null,
+      "before": null,
+      "after": null
+    },
+    {
+      "type": "PRESENCE_CHANGED",
+      "room_id": "room1",
+      "person_id": "MEMBER_A",
+      "device_id": null,
+      "before": "HELD",
+      "after": "IN_TRANSIT"
+    }
+  ],
+  "rooms": [
+    {
+      "room_id": "room1",
+      "name": "방1",
+      "origin_m": {
+        "x": 9.1,
+        "y": 9.15
+      },
+      "size_m": {
+        "x": 4.2,
+        "y": 3.4
+      },
+      "adjacent": [
+        "laundry"
+      ],
+      "source": {
+        "node_id": "node_room1",
+        "status": "FRESH",
+        "session_id": "node_room1#1",
+        "last_seq": 128,
+        "last_observed_at": "2026-10-30T22:02:08+09:00"
+      },
+      "occupancy": {
+        "state": "EMPTY",
+        "confidence": 0.6,
+        "since": "2026-10-30T22:02:08+09:00"
+      },
+      "light": {
+        "state": "DARK",
+        "since": "2026-10-30T22:01:10+09:00"
+      },
+      "audio": {
+        "context": "SILENT",
+        "confidence": 0.85,
+        "since": "2026-10-30T22:00:02+09:00"
+      },
+      "temperature_c": {
+        "value": 27.6,
+        "observed_at": "2026-10-30T22:01:14+09:00",
+        "source": "ac_room1"
+      },
+      "dirt_level": {
+        "value": 0.2,
+        "observed_at": "2026-10-30T22:01:10+09:00",
+        "source": "sim"
+      },
+      "person_ids": []
+    },
+    {
+      "room_id": "living",
+      "name": "거실",
+      "origin_m": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "size_m": {
+        "x": 7.1,
+        "y": 9.1
+      },
+      "adjacent": [],
+      "source": {
+        "node_id": "node_living",
+        "status": "FRESH",
+        "session_id": "node_living#1",
+        "last_seq": 380,
+        "last_observed_at": "2026-10-30T22:02:07.600000+09:00"
+      },
+      "occupancy": {
+        "state": "OCCUPIED",
+        "confidence": 0.95,
+        "since": "2026-10-30T21:55:00+09:00"
+      },
+      "light": {
+        "state": "BRIGHT",
+        "since": "2026-10-30T21:50:00+09:00"
+      },
+      "audio": {
+        "context": "TV",
+        "confidence": 0.8,
+        "since": "2026-10-30T21:55:50+09:00"
+      },
+      "temperature_c": {
+        "value": 26.4,
+        "observed_at": "2026-10-30T22:02:06+09:00",
+        "source": "ac_living"
+      },
+      "dirt_level": {
+        "value": 0.35,
+        "observed_at": "2026-10-30T22:02:03+09:00",
+        "source": "sim"
+      },
+      "person_ids": [
+        "MEMBER_B"
+      ]
+    },
+    {
+      "room_id": "room2",
+      "name": "방2",
+      "origin_m": {
+        "x": 0.0,
+        "y": 9.1
+      },
+      "size_m": {
+        "x": 6.2,
+        "y": 4.95
+      },
+      "adjacent": [],
+      "source": {
+        "node_id": null,
+        "status": "NO_DATA",
+        "session_id": null,
+        "last_seq": null,
+        "last_observed_at": null
+      },
+      "occupancy": {
+        "state": "UNKNOWN",
+        "confidence": 0.0,
+        "since": null
+      },
+      "light": {
+        "state": "UNKNOWN",
+        "since": null
+      },
+      "audio": {
+        "context": "UNKNOWN",
+        "confidence": 0.0,
+        "since": null
+      },
+      "temperature_c": {
+        "value": null,
+        "observed_at": null,
+        "source": null
+      },
+      "dirt_level": {
+        "value": null,
+        "observed_at": null,
+        "source": null
+      },
+      "person_ids": []
+    },
+    {
+      "room_id": "laundry",
+      "name": "세탁실",
+      "origin_m": {
+        "x": 9.1,
+        "y": 12.55
+      },
+      "size_m": {
+        "x": 4.2,
+        "y": 1.5
+      },
+      "adjacent": [
+        "room1"
+      ],
+      "source": {
+        "node_id": null,
+        "status": "NO_DATA",
+        "session_id": null,
+        "last_seq": null,
+        "last_observed_at": null
+      },
+      "occupancy": {
+        "state": "UNKNOWN",
+        "confidence": 0.0,
+        "since": null
+      },
+      "light": {
+        "state": "UNKNOWN",
+        "since": null
+      },
+      "audio": {
+        "context": "UNKNOWN",
+        "confidence": 0.0,
+        "since": null
+      },
+      "temperature_c": {
+        "value": null,
+        "observed_at": null,
+        "source": null
+      },
+      "dirt_level": {
+        "value": null,
+        "observed_at": null,
+        "source": null
+      },
+      "person_ids": []
+    }
+  ],
+  "people": [
+    {
+      "person_id": "MEMBER_A",
+      "identity": "MEMBER_A",
+      "identity_confidence": 0.75,
+      "identity_source": "TRACK_CARRIED",
+      "candidates": [],
+      "presence": "IN_TRANSIT",
+      "presence_since": "2026-10-30T22:02:08+09:00",
+      "room_id": "room1",
+      "track": null,
+      "posture": {
+        "state": "UNKNOWN",
+        "confidence": 0.0,
+        "since": "2026-10-30T22:02:08+09:00"
+      },
+      "motion": "UNKNOWN",
+      "activity": {
+        "state": "UNKNOWN",
+        "confidence": 0.0,
+        "since": "2026-10-30T22:02:08+09:00",
+        "rest_episode": 1
+      },
+      "position": {
+        "room": {
+          "x": 0.5,
+          "y": 2.0
+        },
+        "home": {
+          "x": 9.6,
+          "y": 11.15
+        },
+        "zone": null
+      },
+      "last_seen_at": "2026-10-30T22:02:01+09:00"
+    },
+    {
+      "person_id": "MEMBER_B",
+      "identity": "MEMBER_B",
+      "identity_confidence": 0.9,
+      "identity_source": "FACE",
+      "candidates": [],
+      "presence": "SEEN",
+      "presence_since": "2026-10-30T21:55:00+09:00",
+      "room_id": "living",
+      "track": {
+        "node_id": "node_living",
+        "session_id": "node_living#1",
+        "track_id": 1
+      },
+      "posture": {
+        "state": "SITTING",
+        "confidence": 0.88,
+        "since": "2026-10-30T21:55:20+09:00"
+      },
+      "motion": "SLIGHT",
+      "activity": {
+        "state": "OTHER",
+        "confidence": 0.8,
+        "since": "2026-10-30T21:55:00+09:00",
+        "rest_episode": 0
+      },
+      "position": {
+        "room": {
+          "x": 0.6,
+          "y": 4.9
+        },
+        "home": {
+          "x": 0.6,
+          "y": 4.9
+        },
+        "zone": "sofa"
+      },
+      "last_seen_at": "2026-10-30T22:01:15+09:00"
+    }
+  ],
+  "devices": [
+    {
+      "device_id": "light_room1",
+      "type": "LIGHT",
+      "name": "방1 조명",
+      "room_id": "room1",
+      "online": true,
+      "actions": [
+        "TURN_ON",
+        "TURN_OFF"
+      ],
+      "state": {
+        "power": "OFF"
+      },
+      "observed_at": "2026-10-30T22:01:09.500000+09:00",
+      "last_result": {
+        "command_id": "00000000-0000-4000-8000-0000000000d1",
+        "action": "TURN_OFF",
+        "status": "COMPLETED",
+        "reason": null,
+        "timestamp": "2026-10-30T22:01:09.500000+09:00",
+        "revision": 40
+      }
+    },
+    {
+      "device_id": "curtain_room1",
+      "type": "CURTAIN",
+      "name": "방1 커튼",
+      "room_id": "room1",
+      "online": true,
+      "actions": [
+        "OPEN",
+        "CLOSE"
+      ],
+      "state": {
+        "position": "CLOSED",
+        "moving_to": null,
+        "progress": 1.0
+      },
+      "observed_at": "2026-10-30T22:00:10+09:00",
+      "last_result": null
+    },
+    {
+      "device_id": "ac_room1",
+      "type": "AC",
+      "name": "방1 에어컨",
+      "room_id": "room1",
+      "online": true,
+      "actions": [
+        "TURN_ON",
+        "TURN_OFF",
+        "SET_TARGET",
+        "SET_WIND"
+      ],
+      "state": {
+        "power": "ON",
+        "target_c": 24.0,
+        "wind_to": "MEMBER_A"
+      },
+      "observed_at": "2026-10-30T22:00:30+09:00",
+      "last_result": null
+    },
+    {
+      "device_id": "ac_living",
+      "type": "AC",
+      "name": "거실 에어컨",
+      "room_id": "living",
+      "online": true,
+      "actions": [
+        "TURN_ON",
+        "TURN_OFF",
+        "SET_TARGET",
+        "SET_WIND"
+      ],
+      "state": {
+        "power": "ON",
+        "target_c": 26.0,
+        "wind_to": "MEMBER_B"
+      },
+      "observed_at": "2026-10-30T21:56:40+09:00",
+      "last_result": null
+    },
+    {
+      "device_id": "washer",
+      "type": "WASHER",
+      "name": "세탁기",
+      "room_id": "laundry",
+      "online": true,
+      "actions": [
+        "START",
+        "PAUSE",
+        "SET_MODE"
+      ],
+      "state": {
+        "power": "RUNNING",
+        "mode": "NORMAL",
+        "remaining_s": 1260,
+        "noise_db": 58.0
+      },
+      "observed_at": "2026-10-30T22:01:14+09:00",
+      "last_result": null
+    },
+    {
+      "device_id": "vacuum",
+      "type": "ROBOT_VACUUM",
+      "name": "로봇청소기",
+      "room_id": null,
+      "online": true,
+      "actions": [
+        "CLEAN_ROOM",
+        "RETURN_TO_DOCK",
+        "PAUSE"
+      ],
+      "state": {
+        "status": "DOCKED",
+        "room": null,
+        "battery": 0.92
+      },
+      "observed_at": "2026-10-30T22:01:00+09:00",
+      "last_result": null
+    }
+  ],
+  "preferences": [
+    {
+      "identity": "MEMBER_A",
+      "display_name": "A",
+      "preferred_temp_c": 24.0,
+      "updated_at": "2026-10-29T22:00:00+09:00"
+    },
+    {
+      "identity": "MEMBER_B",
+      "display_name": "B",
+      "preferred_temp_c": 26.0,
+      "updated_at": null
+    }
+  ],
+  "routines": [
+    {
+      "routine_id": "a_sleep",
+      "identity": "MEMBER_A",
+      "kind": "SLEEP",
+      "time": "23:30",
+      "days": [
+        "SUN",
+        "MON",
+        "TUE",
+        "WED",
+        "THU"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "schema_version": "0.1",
+  "event_id": "00000000-0000-4000-8000-000000000901",
+  "timestamp": "2026-10-30T22:01:30.200000+09:00",
+  "revision": 46,
+  "command_id": "00000000-0000-4000-8000-000000000902",
+  "device_id": "vacuum",
+  "action": "CLEAN_ROOM",
+  "status": "REJECTED",
+  "reason": "BATTERY_LOW",
+  "state": {
+    "status": "DOCKED",
+    "room": null,
+    "battery": 0.12
+  }
+}

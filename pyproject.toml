@@ -1,0 +1,16 @@
+[project]
+name = "eyear-worldmodel"
+version = "2.0.0.dev0"
+description = "EYEAR World Model — Node 관측을 모아 WorldSnapshot 2.0을 만든다"
+requires-python = ">=3.11"
+dependencies = ["pydantic>=2.6"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "jsonschema>=4.20"]
+
+[tool.setuptools.packages.find]
+include = ["worldmodel*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
