@@ -8,6 +8,14 @@ This module combines observations from room Nodes into a shared home state, incl
 
 Python 3.11.
 
+## Example
+
+Home simulator view (`sim/`): each room's occupancy and light, resident identity, posture and activity, and appliance states that the World Model tracks.
+
+| Whole home | Room 1 close-up |
+|---|---|
+| ![Whole home: B sitting in the living room, vacuum moving to room 1, washer in normal mode](docs/images/sim_overview.png) | ![Room 1: A standing, AC at 24°C with airflow toward A, washer in quiet mode](docs/images/sim_room1_ac.png) |
+
 ## Interface
 
 [Radar data specification](EYEAR_레이더_데이터_명세서.md)
