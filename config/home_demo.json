@@ -15,7 +15,7 @@
     {"node_id": "node_laundry", "room_id": "laundry", "supports_speak": false}
   ],
   "identities": {
-    "MEMBER_A": "person_a",
+    "MEMBER_D": "person_a",
     "MEMBER_B": "person_b"
   },
   "room_influence": {

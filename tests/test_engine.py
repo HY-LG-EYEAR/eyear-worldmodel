@@ -10,7 +10,7 @@ from worldmodel.contract.semantic import check
 from worldmodel.engine import WorldEngine
 
 PROFILES = [
-    {"profile_id": "profile_a", "identity": "MEMBER_A", "preferred_min_c": 23, "preferred_max_c": 25,
+    {"profile_id": "profile_a", "identity": "MEMBER_D", "preferred_min_c": 23, "preferred_max_c": 25,
      "quiet_rest": True, "quiet_meeting": True},
     {"profile_id": "profile_b", "identity": "MEMBER_B", "preferred_min_c": None, "preferred_max_c": None,
      "quiet_rest": None, "quiet_meeting": None},
@@ -67,6 +67,17 @@ def test_basic_mapping(eng):
     assert nd.received_at == at(0) and nd.supports_speak is True
     # Node가 없는 부엌은 여전히 모름
     assert room(s, "kitchen").occupancy.state == "UNKNOWN"
+
+
+def test_node_schema_0_2_accepted(eng):
+    """eyear-node 0.2 (boot_id 추가) 메시지도 받는다. 시연 A = MEMBER_D."""
+    m = FakeNode().msg(0, persons=[person(identity="MEMBER_D")])
+    m.update(schema_version="0.2", boot_id="b0000000-0000-4000-8000-000000000001")
+    assert eng.ingest_node(m, at(0)) == "accepted"
+    s = eng.snapshot(at(0.2))
+    assert node(s, "node_room1").schema_version == "0.2"
+    a = who(s, "person_a")
+    assert a.identity == "MEMBER_D" and a.profile_id == "profile_a"
 
 
 def test_activity_confirmed_and_stable_for_s(eng):

@@ -47,7 +47,7 @@ class NodeAudio(_In):
 
 
 class NodeStateMessage(_In):
-    schema_version: Literal["0.1"]
+    schema_version: Literal["0.1", "0.2"]
     event_id: UUID
     node_id: str
     room_id: str

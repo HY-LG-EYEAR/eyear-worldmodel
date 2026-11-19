@@ -20,7 +20,7 @@ def example() -> dict:
     return json.loads(EXAMPLE.read_text(encoding="utf-8"))
 
 
-def person(track_id=1, identity="MEMBER_A", source="FACE", posture="LYING", activity="RESTING",
+def person(track_id=1, identity="MEMBER_D", source="FACE", posture="LYING", activity="RESTING",
            position=(2.4, 2.67), **kw) -> dict:
     return {
         "track_id": track_id, "identity": identity,
