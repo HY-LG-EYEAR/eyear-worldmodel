@@ -1,0 +1,14 @@
+{
+  "_comment": "앱 연결(⑧)이 정해지기 전 임시 입력. worldmodel.live --app-data가 읽는다. 선호값은 중앙 fixtures의 A·B와 같고, A는 시연 identity MEMBER_D. 루틴은 청소기가 상태를 보고한 뒤에만 스냅샷에 들어간다.",
+  "profiles": [
+    {"profile_id": "profile_a", "identity": "MEMBER_D", "preferred_min_c": 23, "preferred_max_c": 25,
+     "quiet_rest": true, "quiet_meeting": true},
+    {"profile_id": "profile_b", "identity": "MEMBER_B", "preferred_min_c": 25, "preferred_max_c": 27,
+     "quiet_rest": true, "quiet_meeting": true}
+  ],
+  "routines": [
+    {"routine_id": "daily_clean", "occurrence_id": "daily_clean_demo_evening", "device_id": "vacuum_01",
+     "room_ids": ["room2", "room1"], "due": true, "requested_at": null, "deadline_at": null}
+  ],
+  "user_restrictions": []
+}

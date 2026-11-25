@@ -89,6 +89,8 @@ class NodeHub:
         self.superseded = 0         # sink가 느려 최신 것으로 대체된 수
         self.sink_errors = 0
         self.last_sink_error: str | None = None
+        self.tick_errors = 0
+        self.last_tick_error: str | None = None
         self._outbox: Any = None
         self._outbox_ready = threading.Event()
         self._stop = threading.Event()
@@ -120,6 +122,11 @@ class NodeHub:
         if lane is not None:
             with self._engine_lock:
                 self.engine.mark_node_offline(lane.node_id)
+
+    def call_engine(self, fn: Callable[[WorldEngine], Any]) -> Any:
+        """기기 상태·결과처럼 Node 줄을 거치지 않는 입력을 엔진 잠금 안에서 반영한다."""
+        with self._engine_lock:
+            return fn(self.engine)
 
     # ── 처리 ───────────────────────────────────────────────────
     def _parse(self, lane: _Lane, env: _Envelope) -> NodeStateMessage | str:
@@ -221,7 +228,12 @@ class NodeHub:
 
     def _tick_loop(self) -> None:
         while not self._stop.wait(self.tick_s):
-            self.tick()
+            try:
+                self.tick()
+            except Exception as e:  # 발행 검사 실패(SnapshotError 등)로 발행 스레드가 죽으면 안 된다
+                with self._misc_lock:
+                    self.tick_errors += 1
+                    self.last_tick_error = f"{type(e).__name__}: {e}"
 
     def _send_loop(self) -> None:
         while not self._stop.is_set():
@@ -235,7 +247,8 @@ class NodeHub:
     # ── 상태 보기 ─────────────────────────────────────────────
     def stats(self) -> dict:
         out = {"unrouted": self.unrouted, "published": self.published, "sent": self.sent,
-               "superseded": self.superseded, "sink_errors": self.sink_errors, "lanes": {}}
+               "superseded": self.superseded, "sink_errors": self.sink_errors,
+               "tick_errors": self.tick_errors, "lanes": {}}
         for room, lane in self.lanes.items():
             with lane.lock:
                 s = asdict(lane.stats)

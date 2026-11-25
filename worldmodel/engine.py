@@ -440,7 +440,8 @@ class WorldEngine:
             "people": people,
             "devices": self._devices_out(now, {p["person_id"] for p in people}),
             "profiles": self.profiles,
-            "routines": self.routines,
+            # 기기가 아직 상태를 보고하지 않았으면 그 루틴은 뺀다 (없는 기기 참조는 계약 위반이라 발행이 막힘)
+            "routines": [r for r in self.routines if r["device_id"] in self.devices],
             "room_influence": self.cfg.room_influence,
             "room_links": [l.model_dump(mode="json") for l in self.cfg.room_links],
             "user_restrictions": restrictions,
