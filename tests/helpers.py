@@ -40,12 +40,13 @@ class FakeNode:
         self.node_id, self.room_id, self.seq = node_id, room_id, 0
 
     def msg(self, t: float, occupancy="OCCUPIED", conf=0.95, persons=(), audio="SILENT",
-            light="BRIGHT", event_type="HEARTBEAT", seq=None) -> dict:
+            light="BRIGHT", event_type="HEARTBEAT", seq=None, boot_id=None) -> dict:
         if seq is None:
             self.seq += 1
             seq = self.seq
         else:
             self.seq = seq
+        extra = {"schema_version": "0.2", "boot_id": boot_id} if boot_id else {}
         return {
             "schema_version": "0.1", "event_id": str(uuid.uuid4()),
             "node_id": self.node_id, "room_id": self.room_id,
@@ -54,4 +55,4 @@ class FakeNode:
             "persons": list(persons),
             "audio": {"context": audio, "confidence": 0.0 if audio == "UNKNOWN" else 0.8},
             "light": light,
-        }
+        } | extra

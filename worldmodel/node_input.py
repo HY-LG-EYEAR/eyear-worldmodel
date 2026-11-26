@@ -49,6 +49,7 @@ class NodeAudio(_In):
 class NodeStateMessage(_In):
     schema_version: Literal["0.1", "0.2"]
     event_id: UUID
+    boot_id: UUID | None = None          # 0.2부터. 바뀌면 Node 재시작
     node_id: str
     room_id: str
     timestamp: AwareDatetime

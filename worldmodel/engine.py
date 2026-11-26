@@ -65,6 +65,7 @@ class NodeRec:
     offline: bool = False
     epoch: int = 0                                   # 재시작으로 판단할 때마다 +1 (track 번호 재사용 구분)
     event_ids: deque = field(default_factory=lambda: deque(maxlen=512))
+    old_boots: deque = field(default_factory=lambda: deque(maxlen=8))   # 지나간 boot_id (늦게 온 옛 메시지 거르기)
     track_person: dict[int, str] = field(default_factory=dict)
 
 
@@ -165,10 +166,20 @@ class WorldEngine:
             return "duplicate"
 
         restart = False
-        if nr.last is not None and msg.seq <= nr.last.seq:
-            # Node에 boot_id가 없어 seq만으로는 확실히 못 가른다.
+        last = nr.last
+        if last is not None and msg.boot_id is not None and last.boot_id is not None:
+            # Node 0.2: boot_id가 바뀌면 재시작 (seq도 0부터). 같은 boot 안에서는 seq만 본다.
+            if msg.boot_id in nr.old_boots:
+                return "out_of_order"                   # 재시작 전 메시지가 늦게 옴
+            if msg.boot_id != last.boot_id:
+                nr.old_boots.append(last.boot_id)
+                restart = True
+            elif msg.seq <= last.seq:
+                return "out_of_order"
+        elif last is not None and msg.seq <= last.seq:
+            # boot_id가 없는 Node(0.1): seq만으로는 확실히 못 가른다.
             # seq가 0으로 돌아왔거나, seq는 줄었는데 Node 시각은 앞섰으면 재시작으로 본다.
-            if msg.seq == 0 or msg.timestamp > nr.last.timestamp:
+            if msg.seq == 0 or msg.timestamp > last.timestamp:
                 restart = True
             else:
                 return "out_of_order"

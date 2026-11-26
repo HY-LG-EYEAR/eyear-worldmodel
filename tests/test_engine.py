@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import uuid
+
 import pytest
 
 from tests.helpers import CONFIG, FakeNode, at, person
@@ -277,6 +279,20 @@ def test_node_restart_resets_tracks_and_stability(eng):
     eng.ingest_node(n.msg(11, persons=[person(1, identity="UNKNOWN", source="UNKNOWN")]), at(11))
     ids = {p.person_id for p in eng.snapshot(at(11)).people}
     assert "person_a" in ids and any(i.startswith("anon_node_room1_e1_") for i in ids)  # 같은 track 1이라도 이전 사람에 붙이지 않음
+
+
+def test_boot_id_decides_restart_and_drops_late_messages_from_old_boot(eng):
+    n = FakeNode()
+    b1, b2 = str(uuid.uuid4()), str(uuid.uuid4())
+    for t in range(0, 5):
+        eng.ingest_node(n.msg(t, persons=[person()], boot_id=b1), at(t))
+    # 같은 boot에서 seq 0: 예전 규칙이면 재시작이지만 boot_id가 같으니 늦게 온 메시지
+    assert eng.ingest_node(n.msg(5, seq=0, boot_id=b1), at(5)) == "out_of_order"
+    # boot_id가 바뀌면 seq가 커도 재시작
+    assert eng.ingest_node(n.msg(6, seq=50, persons=[], boot_id=b2), at(6)) == "restart"
+    # 재시작 전 boot의 메시지가 늦게 와도 다시 재시작하지 않는다
+    assert eng.ingest_node(n.msg(4.5, seq=4, persons=[person()], boot_id=b1), at(6.1)) == "out_of_order"
+    assert eng.ingest_node(n.msg(7, seq=51, boot_id=b2), at(7)) == "accepted"
 
 
 def test_bad_inputs(eng):
