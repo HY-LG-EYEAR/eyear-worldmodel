@@ -42,6 +42,7 @@ python -m worldmodel.device_sim --mqtt <브로커>
 - 가전 시뮬레이터가 없으면 스냅샷에 기기가 없어서, 중앙은 조명 끄기·청소 같은 명령을 내지 않는다.
 - 기기 목록은 중앙 fixtures와 같다: `vacuum_01`(kitchen), `washer_01`(laundry), `ac_room1`, `ac_living`, `light_room1`, `curtain_room1`.
   청소기는 방마다 `--room-s`초(기본 20) 청소한 뒤 도크로 돌아와 `completed`를 보낸다.
+- 방을 옮긴 사람 이어 붙이기는 기본으로 꺼져 있다. `config/home_demo.json`에 `"handoff_s": 10`을 넣으면 켜진다 (규칙은 `docs/고민_목록.md` B1).
 - 장치 없이 시험: eyear-node의 `python -m recorder.replay recorder/samples/2026-11-19_room1_rest_passerby.jsonl --mqtt <브로커>`
 
 ## WorldSnapshot 2.0 (World Model → Orchestrator, 2026-11-13 협의안)

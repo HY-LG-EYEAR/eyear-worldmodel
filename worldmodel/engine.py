@@ -80,6 +80,9 @@ class PersonRec:
     tracked: bool = True
     lost_at: datetime | None = None                  # WM 시계
     activity: Stable = field(default_factory=Stable)
+    first_seen: datetime | None = None               # WM 시계. 이어 붙이기 대상인 새 track인지 판단
+    carried: tuple[str, float | None] | None = None  # 방을 옮겨 이어 붙인 신원 (identity, confidence). B1
+    prior: "PersonRec | None" = None                 # 이어 붙이기 전 기록. 다른 구성원으로 정정되면 되돌린다
 
 
 @dataclass
@@ -221,6 +224,11 @@ class WorldEngine:
     def _person_id(self, nr: NodeRec, node_id: str, p: NodePerson) -> str:
         member = self.cfg.identities.get(p.identity)
         prev = nr.track_person.get(p.track_id)
+        if prev is not None and member is None and not prev.startswith(ANON_PREFIX):
+            owner = self.people.get(prev)
+            if owner is not None and owner.tracked and owner.node_id != node_id:
+                # 이 구성원을 다른 Node가 얼굴로 다시 잡았다 → 여기 track은 그 사람이 아니었거나 남은 흔적. 익명으로
+                return f"{ANON_PREFIX}{node_id}_e{nr.epoch}_t{p.track_id}"
         if prev is not None:
             # 같은 track은 끝날 때까지 같은 person_id. 중앙은 person_id로 휴식 에피소드·질문을 묶으므로,
             # 누운 뒤 얼굴이 인식됐다고 ID를 바꾸면 같은 휴식에 질문이 두 번 나간다 (2026-11-25 실제 Node 재생).
@@ -233,11 +241,58 @@ class WorldEngine:
         # Node별 track_id는 집 전체 ID가 아니다 → Node·재시작 회차·track으로 만든다
         return f"{ANON_PREFIX}{node_id}_e{nr.epoch}_t{p.track_id}"
 
+    def _handoff(self, msg: NodeStateMessage, t: datetime) -> tuple[int, PersonRec] | None:
+        """B1 방을 옮긴 사람 이어 붙이기 (cfg.handoff_s가 있을 때만).
+        이 Node에 얼굴 없는 새 track(생긴 지 handoff_s 안)이 1개뿐이고, handoff_s 안에 붙어 있는 방에서 추적이 끊긴
+        구성원이 1명뿐이면 같은 사람으로 본다. 둘 중 하나라도 여러 명이면 틀릴 수 있으니 붙이지 않는다.
+        추적이 끊겼어도 그 방이 계속 차 있는 사람(HELD)은 나간 게 아니므로 후보가 아니다. 나간 방의 재실이 조금 늦게
+        EMPTY가 되므로 새 track이 생긴 순간만이 아니라 handoff_s 동안 계속 다시 본다."""
+        if self.cfg.handoff_s is None:
+            return None
+        nr = self.nodes[msg.node_id]
+
+        def young(p: NodePerson) -> bool:
+            if p.identity in self.cfg.identities:
+                return False
+            prev = nr.track_person.get(p.track_id)
+            if prev is None:
+                return True
+            r = self.people.get(prev)
+            return (prev.startswith(ANON_PREFIX) and r is not None and r.first_seen is not None
+                    and (t - r.first_seen).total_seconds() <= self.cfg.handoff_s)
+
+        new = [p for p in msg.persons if young(p)]
+        if len(new) != 1:
+            return None
+        near = {l.room_b if l.room_a == msg.room_id else l.room_a for l in self.cfg.room_links
+                if l.passable and msg.room_id in (l.room_a, l.room_b)}
+        cands = []
+        for pid, r in self.people.items():
+            if r.tracked or r.lost_at is None or r.node_id == msg.node_id or r.room_id not in near:
+                continue
+            if not self._identified(pid, r) or not 0 <= (t - r.lost_at).total_seconds() <= self.cfg.handoff_s:
+                continue
+            occ = self.room_occ[r.room_id]
+            if occ.value == "OCCUPIED" and occ.since is not None and occ.since <= r.lost_at:
+                continue   # HELD: 아직 그 방에 있음
+            cands.append(r)
+        return (new[0].track_id, cands[0]) if len(cands) == 1 else None
+
+    def _carried_identity(self, r: PersonRec) -> tuple[str, float | None] | None:
+        if r.obs.identity in self.cfg.identities:
+            return r.obs.identity, r.obs.identity_confidence
+        return r.carried
+
     def _apply_persons(self, msg: NodeStateMessage, t: datetime) -> None:
         nr = self.nodes[msg.node_id]
         new_map: dict[int, str] = {}
+        handoff = self._handoff(msg, t)
         for p in msg.persons:
             pid = self._person_id(nr, msg.node_id, p)
+            prior = None
+            if handoff is not None and handoff[0] == p.track_id:
+                prior = handoff[1]
+                pid = prior.person_id
             if pid in new_map.values():
                 # 같은 Node 안에서 두 track이 같은 구성원으로 나옴 → 뒤 track은 익명으로
                 pid = f"{ANON_PREFIX}{msg.node_id}_e{nr.epoch}_t{p.track_id}"
@@ -247,10 +302,19 @@ class WorldEngine:
                 # 같은 track(같은 몸)이 다른 구성원으로 정정됨 → 이전 ID는 오인이었으니 HELD로 남기지 않는다
                 old_rec = self.people.get(prev)
                 if old_rec is not None and old_rec.node_id == msg.node_id and old_rec.tracked:
-                    del self.people[prev]
+                    if old_rec.prior is not None:
+                        self.people[prev] = old_rec.prior   # 이어 붙이기가 틀렸음 → 원래 방에서 끊긴 상태로 되돌림
+                    else:
+                        del self.people[prev]
             rec = self.people.get(pid)
             if rec is None or rec.node_id != msg.node_id or not rec.tracked or rec.track_id != p.track_id:
                 rec = PersonRec(pid, msg.node_id, msg.room_id, p, msg.timestamp, p.track_id)
+                rec.first_seen = t
+                if prior is not None:
+                    rec.carried, rec.prior = self._carried_identity(prior), prior
+                    anon = self.people.get(nr.track_person.get(p.track_id, ""))
+                    if anon is not None:
+                        rec.first_seen, rec.activity = anon.first_seen, anon.activity   # 활동 지속 시간은 이어 감
                 self.people[pid] = rec
             rec.obs, rec.observed_at, rec.tracked, rec.lost_at = p, msg.timestamp, True, None
             rec.activity.update(p.activity, t)
@@ -396,10 +460,13 @@ class WorldEngine:
         for pid, p in self.people.items():
             o = p.obs
             fresh = self._node_fresh(p.node_id, now)
-            profile_id = None if o.identity in ("UNKNOWN", "GUEST") else profile_by_identity.get(o.identity)
-            base = {"person_id": pid, "profile_id": profile_id, "identity": o.identity,
-                    "identity_confidence": _null_if_unknown(o.identity, o.identity_confidence),
-                    "identity_source": o.identity_source}
+            if p.carried is not None and o.identity not in self.cfg.identities:
+                ident, conf, src = p.carried[0], p.carried[1], "TRACK_CARRIED"   # 얼굴은 안 보였지만 이어 붙인 신원
+            else:
+                ident, conf, src = o.identity, _null_if_unknown(o.identity, o.identity_confidence), o.identity_source
+            profile_id = None if ident in ("UNKNOWN", "GUEST") else profile_by_identity.get(ident)
+            base = {"person_id": pid, "profile_id": profile_id, "identity": ident,
+                    "identity_confidence": conf, "identity_source": src}
             label = ACTIVITY_MAP[o.activity]
 
             if p.tracked and fresh:

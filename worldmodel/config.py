@@ -51,6 +51,9 @@ class HomeConfig(_Cfg):
     room_influence: dict[str, dict[str, Annotated[float, Field(ge=0, le=1)] | None]]
     room_links: list[RoomLink]
     ttl: Ttl = Ttl()
+    # B1 방을 옮긴 사람 이어 붙이기: 구성원이 추적이 끊긴 뒤 이 시간(초) 안에 붙어 있는 방에 얼굴 없이 1명이 새로 잡히면
+    # 같은 person_id로 이어 준다 (identity_source TRACK_CARRIED). null이면 끔. 틀리면 다른 사람을 구성원으로 오인한다
+    handoff_s: Seconds | None = None
 
     @model_validator(mode="after")
     def _check(self):

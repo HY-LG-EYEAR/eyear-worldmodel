@@ -119,3 +119,56 @@ def test_engine_output_accepted_end_to_end():
     assert rx.receive(s.model_dump(mode="json"), now=at(41))[0] == 409   # 등록 전
     rx.register(eng.cfg.home_id, sid)
     assert rx.receive(s.model_dump(mode="json"), now=at(41))[0] == 202
+
+
+def test_session_clock_mode_must_match():
+    rx = SnapshotReceiver()
+    d = example()                                             # clock_mode replay
+    rx.register("home_demo_01", d["world_session_id"], clock_mode="live")
+    code, body = rx.receive(d)
+    assert code == 409 and "clock_mode" in body["errors"][0]
+    rx.register("home_demo_01", d["world_session_id"], clock_mode="replay")
+    assert rx.receive(d)[0] == 202
+    with pytest.raises(ValueError):
+        rx.register("home_demo_01", d["world_session_id"], clock_mode="fast")
+
+
+def _with(**changes):
+    d = example()
+    for k, v in changes.items():
+        d[k] = v
+    return d
+
+
+def test_manual_override_blocks_commands():
+    d = example()
+    next(x for x in d["devices"] if x["device_id"] == "light_room1")["manual_override"] = True
+    s = WorldSnapshot.model_validate(d)
+    ok, why = can_issue(s, "light_room1", "set_power", {"power": "off"})
+    assert not ok and "manual_override" in why
+    assert can_issue(s, "curtain_room1", "set_curtain_position", {"position_pct": 0})[0]   # 다른 기기는 됨
+
+
+def restriction(target_type, target_id, action=None, expires_at=None, rid="r1"):
+    return {"restriction_id": rid, "target_type": target_type, "target_id": target_id, "action": action,
+            "expires_at": expires_at, "reason": "테스트"}
+
+
+@pytest.mark.parametrize("u, device, action, params, ok", [
+    (restriction("room", "room1", "start_cleaning"), "vacuum_01", "start_cleaning", {"room_ids": ["room1"]}, False),
+    (restriction("room", "room1", "start_cleaning"), "vacuum_01", "start_cleaning", {"room_ids": ["living"]}, True),
+    (restriction("room", "room1"), "light_room1", "set_power", {"power": "off"}, False),        # action null = 전부
+    (restriction("room", "room1", "start_cleaning"), "light_room1", "set_power", {"power": "off"}, True),
+    (restriction("device", "ac_room1", "set_power"), "ac_room1", "set_power", {"power": "on"}, False),
+    (restriction("device", "ac_room1", "set_power"), "ac_living", "set_power", {"power": "on"}, True),
+    (restriction("room", "room1", None, "2026-11-13T21:00:00+09:00"), "light_room1", "set_power",
+     {"power": "off"}, True),                                                                  # as_of 전에 만료
+    (restriction("room", "room1", None, "2026-11-13T22:00:00+09:00"), "light_room1", "set_power",
+     {"power": "off"}, False),
+])
+def test_user_restrictions(u, device, action, params, ok):
+    s = WorldSnapshot.model_validate(_with(user_restrictions=[u]))
+    got, why = can_issue(s, device, action, params)
+    assert got is ok, why
+    if not ok:
+        assert "r1" in why

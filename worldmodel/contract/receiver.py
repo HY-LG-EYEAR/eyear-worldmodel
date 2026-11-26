@@ -26,14 +26,22 @@ def _digest(s: WorldSnapshot) -> str:
 class SnapshotReceiver:
     def __init__(self):
         self.sessions: dict[str, UUID] = {}                  # home_id → 등록된 세션
+        self.clock_modes: dict[str, str] = {}                # home_id → 등록 때 받은 clock_mode
         self.latest: dict[str, tuple[int, str]] = {}         # home_id → (revision, digest)
         self.snapshots: dict[str, WorldSnapshot] = {}
         self.work: dict[tuple[str, str], str] = {}           # (occurrence_id, room_id) → 상태 pending|done
         self.decisions = 0                                   # 재판단 횟수 (멱등 확인용)
 
-    def register(self, home_id: str, session_id: UUID | str) -> None:
-        """명시적 reset. 임의 UUID가 왔다는 이유만으로 세션을 바꾸지 않는다. 대기 작업도 초기화."""
+    def register(self, home_id: str, session_id: UUID | str, clock_mode: str | None = None) -> None:
+        """명시적 reset. 임의 UUID가 왔다는 이유만으로 세션을 바꾸지 않는다. 대기 작업도 초기화.
+        clock_mode(live|replay)를 주면 그 세션의 스냅샷은 같은 clock_mode여야 한다 (2장, 중앙 server.py와 같음)."""
+        if clock_mode is not None and clock_mode not in ("live", "replay"):
+            raise ValueError("clock_mode는 live 또는 replay")
         self.sessions[home_id] = UUID(str(session_id))
+        if clock_mode is None:
+            self.clock_modes.pop(home_id, None)
+        else:
+            self.clock_modes[home_id] = clock_mode
         self.latest.pop(home_id, None)
         self.snapshots.pop(home_id, None)
         self.work.clear()
@@ -54,6 +62,9 @@ class SnapshotReceiver:
         reg = self.sessions.get(s.home_id)
         if reg is None or reg != s.world_session_id:
             return 409, {"accepted": False, "errors": ["등록되지 않은 세션 — reset/등록 먼저"]}
+        mode = self.clock_modes.get(s.home_id)
+        if mode is not None and getattr(s.clock_mode, "value", s.clock_mode) != mode:
+            return 409, {"accepted": False, "errors": [f"세션 clock_mode={mode}와 다름"]}
         ok = {"accepted": True, "home_id": s.home_id, "world_session_id": str(s.world_session_id),
               "world_revision": s.world_revision}
         dg = _digest(s)
@@ -76,32 +87,51 @@ class SnapshotReceiver:
 
 
 def can_issue(s: WorldSnapshot, device_id: str, action: str, params: dict | None = None) -> tuple[bool, str]:
-    """스냅샷의 capabilities 기준으로 이 조작을 발행할 수 있는지. 광고되지 않은 조작은 못 보낸다."""
+    """스냅샷 기준으로 이 조작을 발행할 수 있는지 (6, 7장). 광고되지 않은 조작, 수동 잠금, 사용자 제한은 못 보낸다.
+    중앙 central.py validate()와 같은 순서·규칙."""
     params = params or {}
     dev = next((d for d in s.devices if d.device_id == device_id), None)
     if dev is None:
         return False, "없는 기기"
     if dev.online is not True:
         return False, "기기 online 확인 안 됨"
+    if dev.manual_override is True:
+        return False, "사용자가 직접 조작 중 (manual_override)"
     if dev.evidence.freshness != "current":
         return False, "기기 상태가 current가 아님"
     cap = dev.capabilities
-    if action not in cap.actions:
-        return False, f"{dev.kind}가 {action}을 광고하지 않음"
-    if action == "set_mode" and params.get("mode") not in cap.modes:
+    act = getattr(action, "value", action)
+    if act not in {getattr(a, "value", a) for a in cap.actions}:
+        return False, f"{dev.kind}가 {act}을 광고하지 않음"
+    if act == "set_mode" and params.get("mode") not in cap.modes:
         return False, f"지원하지 않는 모드 {params.get('mode')!r}"
-    if action == "set_target_temperature":
+    if act == "set_target_temperature":
         t, rng = params.get("target_c"), cap.temperature
-        if t is None or not (rng.min_c <= t <= rng.max_c) or abs((t - rng.min_c) / rng.step_c % 1) > 1e-6:
+        if rng is None or not isinstance(t, (int, float)) or not (rng.min_c <= t <= rng.max_c)                 or abs((t - rng.min_c) / rng.step_c % 1) > 1e-6:
             return False, f"온도 {t}가 범위·간격 밖"
-    if action == "set_airflow_target":
+    if act == "set_airflow_target":
         pid = params.get("person_id")
         p = next((x for x in s.people if x.person_id == pid), None)
-        if p is None or p.room_id != dev.room_id or p.position is None:
+        if cap.airflow_target != "person" or p is None or p.room_id != dev.room_id or p.position is None:
             return False, "대상 사람이 이 방에 위치와 함께 관측되지 않음"
-    if action in ("start_cleaning",):
+    if act == "start_cleaning":
         rooms = params.get("room_ids") or []
         known = {r.room_id for r in s.rooms}
         if not rooms or any(r not in known for r in rooms):
             return False, "청소 방 지정 오류"
+    if (u := restriction_hit(s, dev, act, params)) is not None:
+        return False, f"사용자 제한 {u.restriction_id}"
     return True, "ok"
+
+
+def restriction_hit(s: WorldSnapshot, dev, action: str, params: dict):
+    """이 조작을 막는 사용자 제한. 만료(expires_at ≤ as_of)는 무시. 방 제한은 기기가 있는 방과 청소 대상 방에 걸린다.
+    action이 null인 제한은 그 대상의 모든 조작을 막는다."""
+    rooms = set(params.get("room_ids") or []) | ({dev.room_id} if dev.room_id else set())
+    for u in s.user_restrictions:
+        if u.expires_at is not None and u.expires_at <= s.as_of:
+            continue
+        hit = (u.target_type == "device" and u.target_id == dev.device_id) or               (u.target_type == "room" and u.target_id in rooms)
+        if hit and (u.action is None or getattr(u.action, "value", u.action) == action):
+            return u
+    return None
