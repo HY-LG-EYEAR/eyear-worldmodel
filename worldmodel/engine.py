@@ -198,17 +198,27 @@ class WorldEngine:
         p = self.people.get(pid)
         if p is None or p.node_id != node_id or not p.tracked:
             return  # 이미 다른 Node에서 보고 있는 사람
-        if pid.startswith(ANON_PREFIX):
-            del self.people[pid]  # 익명 track은 끊기면 이어 붙일 근거가 없다
+        if not self._identified(pid, p):
+            del self.people[pid]  # 신원 모르는 익명 track은 끊기면 이어 붙일 근거가 없다
         else:
             p.tracked, p.lost_at = False, t
 
+    def _identified(self, pid: str, p: PersonRec) -> bool:
+        """구성원 ID이거나, 익명 ID지만 이 track에서 구성원으로 인식된 사람 (끊겨도 HELD·기억 대상)"""
+        return not pid.startswith(ANON_PREFIX) or p.obs.identity in self.cfg.identities
+
     def _person_id(self, nr: NodeRec, node_id: str, p: NodePerson) -> str:
-        if p.identity in self.cfg.identities:
-            return self.cfg.identities[p.identity]
+        member = self.cfg.identities.get(p.identity)
         prev = nr.track_person.get(p.track_id)
-        if prev is not None and prev.startswith(ANON_PREFIX):
+        if prev is not None:
+            # 같은 track은 끝날 때까지 같은 person_id. 중앙은 person_id로 휴식 에피소드·질문을 묶으므로,
+            # 누운 뒤 얼굴이 인식됐다고 ID를 바꾸면 같은 휴식에 질문이 두 번 나간다 (2026-11-25 실제 Node 재생).
+            # 신원(identity·profile_id)만 새 관측으로 채운다. 예외: 다른 구성원으로 인식이 바뀌면 오인 정정으로 본다.
+            if member is not None and not prev.startswith(ANON_PREFIX) and prev != member:
+                return member
             return prev
+        if member is not None:
+            return member
         # Node별 track_id는 집 전체 ID가 아니다 → Node·재시작 회차·track으로 만든다
         return f"{ANON_PREFIX}{node_id}_e{nr.epoch}_t{p.track_id}"
 
@@ -221,6 +231,12 @@ class WorldEngine:
                 # 같은 Node 안에서 두 track이 같은 구성원으로 나옴 → 뒤 track은 익명으로
                 pid = f"{ANON_PREFIX}{msg.node_id}_e{nr.epoch}_t{p.track_id}"
             new_map[p.track_id] = pid
+            prev = nr.track_person.get(p.track_id)
+            if prev is not None and prev != pid and prev not in new_map.values():
+                # 같은 track(같은 몸)이 다른 구성원으로 정정됨 → 이전 ID는 오인이었으니 HELD로 남기지 않는다
+                old_rec = self.people.get(prev)
+                if old_rec is not None and old_rec.node_id == msg.node_id and old_rec.tracked:
+                    del self.people[prev]
             rec = self.people.get(pid)
             if rec is None or rec.node_id != msg.node_id or not rec.tracked or rec.track_id != p.track_id:
                 rec = PersonRec(pid, msg.node_id, msg.room_id, p, msg.timestamp, p.track_id)
@@ -231,6 +247,13 @@ class WorldEngine:
             if pid not in new_map.values():
                 self._lose(pid, msg.node_id, t)
         nr.track_person = new_map
+        # 지금 보이는 구성원과 같은 사람의 끊긴 기록(HELD·기억)은 지운다. track을 따라 ID가 달라도 한 사람이 두 번 나오지 않게
+        seen = {self.cfg.identities[r.obs.identity]: pid for pid, r in self.people.items()
+                if r.tracked and r.node_id == msg.node_id and r.obs.identity in self.cfg.identities}
+        for pid, r in list(self.people.items()):
+            m = self.cfg.identities.get(r.obs.identity)
+            if not r.tracked and m in seen and seen[m] != pid:
+                del self.people[pid]
 
     # ----- 입력: 기기·환경·앱 -----
 
@@ -386,8 +409,8 @@ class WorldEngine:
                     "evidence": e})
                 continue
 
-            if pid.startswith(ANON_PREFIX):
-                continue  # 익명은 지금 보이는 동안만
+            if not self._identified(pid, p):
+                continue  # 신원 모르는 익명은 지금 보이는 동안만
 
             lost_at = p.lost_at if not p.tracked else self.nodes[p.node_id].received_at
             occ = self.room_occ[p.room_id]

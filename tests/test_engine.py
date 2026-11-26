@@ -167,12 +167,40 @@ def test_member_without_profile_has_null_profile(eng):
     assert p.profile_id is None
 
 
-def test_anon_becomes_member_when_recognised(eng):
+def test_recognised_track_keeps_its_person_id_and_rest_timer(eng):
+    """누운 뒤 얼굴이 인식돼도 같은 track이면 person_id·휴식 확정을 이어 간다.
+    중앙은 person_id마다 휴식 질문을 한 번 하므로, ID가 바뀌면 같은 휴식에 두 번 묻는다 (11-25 실제 Node 재생)."""
     n = FakeNode()
-    eng.ingest_node(n.msg(0, persons=[person(identity="UNKNOWN", source="UNKNOWN")]), at(0))
-    eng.ingest_node(n.msg(1, persons=[person()]), at(1))
-    s = eng.snapshot(at(1))
-    assert [p.person_id for p in s.people] == ["person_a"]
+    u = dict(identity="UNKNOWN", source="UNKNOWN")
+    for t in range(0, 5):
+        eng.ingest_node(n.msg(t, persons=[person(2, **u)]), at(t))
+    [p] = eng.snapshot(at(4)).people
+    anon = p.person_id
+    assert anon == "anon_node_room1_e0_t2" and p.activity.confirmed and p.profile_id is None
+    for t in range(5, 8):                                          # 얼굴 인식: 같은 track 2
+        eng.ingest_node(n.msg(t, persons=[person(2)]), at(t))
+    s = eng.snapshot(at(7))
+    [p] = s.people
+    assert p.person_id == anon and p.identity == "MEMBER_D" and p.profile_id == "profile_a"
+    assert p.activity.confirmed and p.activity.stable_for_s == 7    # 처음부터 다시 세지 않음
+    assert check(s) == []
+    # 소등으로 추적이 끊겨도 신원을 안 사람이라 HELD로 남는다
+    eng.ingest_node(n.msg(8, persons=[], light="DARK"), at(8))
+    held = who(eng.snapshot(at(8.5)), anon)
+    assert held is not None and held.room_id == "room1" and held.evidence.freshness == "stale"
+    # 새 track에서 얼굴로 다시 잡히면 구성원 ID. 끊긴 익명 기록은 같은 사람이라 지운다
+    eng.ingest_node(n.msg(9, persons=[person(3)]), at(9))
+    s = eng.snapshot(at(9))
+    assert [p.person_id for p in s.people] == ["person_a"] and check(s) == []
+
+
+def test_member_track_keeps_id_when_identity_drops_and_switches_on_other_member(eng):
+    n = FakeNode()
+    eng.ingest_node(n.msg(0, persons=[person(1)]), at(0))
+    eng.ingest_node(n.msg(1, persons=[person(1, identity="UNKNOWN", source="UNKNOWN")]), at(1))
+    assert [p.person_id for p in eng.snapshot(at(1)).people] == ["person_a"]   # 신원을 잠깐 놓쳐도 같은 사람
+    eng.ingest_node(n.msg(2, persons=[person(1, identity="MEMBER_B")]), at(2))
+    assert [p.person_id for p in eng.snapshot(at(2)).people] == ["person_b"]   # 다른 구성원으로 정정
 
 
 def test_person_moves_between_rooms(eng):
