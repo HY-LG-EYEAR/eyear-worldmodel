@@ -9,6 +9,8 @@
 기기 목록·능력은 중앙 fixtures와 같다. 청소기는 방마다 --room-s초 동안 청소하고 도크로 돌아오면 completed를 보낸다.
 
     python -m worldmodel.device_sim --mqtt localhost
+
+MQTT 아이디·비밀번호는 live와 같은 환경 변수 EYEAR_MQTT_USER / EYEAR_MQTT_PASSWORD (없으면 익명).
 """
 
 from __future__ import annotations
@@ -17,6 +19,7 @@ import argparse
 import copy
 import json
 import logging
+import os
 import threading
 import uuid
 from datetime import datetime, timedelta, timezone
@@ -204,6 +207,9 @@ def main(argv: list[str] | None = None) -> None:
     lock = threading.Lock()
     host, port = parse_broker(a.mqtt)
     client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id=f"eyear-devsim-{uuid.uuid4().hex[:8]}")
+    user = os.environ.get("EYEAR_MQTT_USER")
+    if user:   # EC2 브로커 1883은 비밀번호 필요 (서버 안 1884는 익명)
+        client.username_pw_set(user, os.environ.get("EYEAR_MQTT_PASSWORD"))
 
     def publish(msgs: Out) -> None:
         for topic, body in msgs:
